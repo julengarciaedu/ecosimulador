@@ -36,8 +36,8 @@ public class DashboardServlet extends HttpServlet {
         try {
             // Obtener simulaciones del usuario
             List<Simulacion> simulaciones = simulacionDAO.findByUsuario(usuarioId);
-            request.setAttribute("simulaciones", simulaciones);
-            
+            datos.put("simulaciones", simulaciones);
+
             // Estadísticas
             int total = simulaciones.size();
             int completadas = (int) simulaciones.stream()
@@ -56,23 +56,24 @@ public class DashboardServlet extends HttpServlet {
             
             //Datos del usuario
             prepararContexto(datos, request);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
-            //request.setAttribute("error", "Error al cargar el dashboard");
             RenderVista.renderizarVista(response, getServletContext().getRealPath("templates/admin.html"), new ErrorM("Error al cargar el Dashboard: " + e.getMessage()));
+            return;
         }
-       
+
         RenderVista.renderizarVista(response, getServletContext().getRealPath("templates/dashboard.html"), datos);
-        
-//        request.getRequestDispatcher("templates/dashboard.html")
-//               .forward(request, response);
     }
-    
+
     // En cada Servlet, agregar estos métodos helper para Mustache
     private void prepararContexto(Map<String, Object> context, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        context.put("username", session.getAttribute("username"));
+        String username = (String) session.getAttribute("username");
+        context.put("username", username);
+        context.put("usernameInitial", username != null && !username.isEmpty()
+                ? String.valueOf(Character.toUpperCase(username.charAt(0))) : "?");
+        context.put("email", session.getAttribute("email"));
         context.put("rol", session.getAttribute("rol"));
         context.put("isAdmin", "admin".equals(session.getAttribute("rol")));
         context.put("isEcoUsuario", "ecousuario".equals(session.getAttribute("rol")));

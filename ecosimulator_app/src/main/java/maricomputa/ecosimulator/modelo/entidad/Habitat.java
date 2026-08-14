@@ -149,4 +149,24 @@ public class Habitat {
         if (calidadAgua == null) return "Desconocida";
         return calidadAgua.toUpperCase();
     }
+
+    public String getBiomaIcono() {
+        if (tipoBioma == null) return "🏞️";
+        switch (tipoBioma) {
+            case "bosque_tropical": return "🌴";
+            case "bosque_templado": return "🌳";
+            case "bosque_boreal": return "🌲";
+            case "pradera_tropical":
+            case "pradera_templada": return "🌾";
+            case "humedal": return "🌊";
+            case "desierto_calido":
+            case "desierto_frio": return "🏜️";
+            case "tundra_artica": return "❄️";
+            case "sabana": return "🦒";
+            case "manglar": return "🌿";
+            case "marino_costero": return "🌊";
+            case "arrecife_coral": return "🐠";
+            default: return "🏞️";
+        }
+    }
 }

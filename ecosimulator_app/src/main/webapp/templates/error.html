@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Error</title>
+    <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <style>
+        .error-container {
+            max-width: 600px;
+            margin: 10vh auto 0;
+            text-align: center;
+            padding: var(--space-xl);
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .error-message {
+            background: #fdebd0;
+            color: #8b6914;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin: var(--space-lg) 0;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="card error-container">
+            <div class="error-icon">⚠️</div>
+            <h1>Ha ocurrido un error</h1>
+            <div class="error-message">{{error}}</div>
+            <a href="/ecosimulator/dashboard" class="btn-primary" style="text-decoration: none; display: inline-block;">
+                ↩️ Volver al Dashboard
+            </a>
+        </div>
+    </main>
+</body>
+</html>

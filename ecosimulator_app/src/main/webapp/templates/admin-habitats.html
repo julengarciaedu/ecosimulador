@@ -163,16 +163,7 @@
                      data-bioma="{{tipoBioma}}"
                      data-proteccion="{{estatusProteccion}}">
                     <div class="biome-icon">
-                        {{#tipoBioma}}
-                            {{#equals tipoBioma 'bosque_tropical'}}🌴{{/equals}}
-                            {{#equals tipoBioma 'bosque_templado'}}🌳{{/equals}}
-                            {{#equals tipoBioma 'humedal'}}🌊{{/equals}}
-                            {{#equals tipoBioma 'desierto_calido'}}🏜️{{/equals}}
-                            {{#equals tipoBioma 'tundra_artica'}}❄️{{/equals}}
-                            {{#equals tipoBioma 'sabana'}}🦒{{/equals}}
-                            {{#equals tipoBioma 'manglar'}}🌿{{/equals}}
-                            {{^}}🏞️{{/}}
-                        {{/tipoBioma}}
+                        {{biomaIcono}}
                     </div>
                     
                     <h4>{{nombre}}</h4>

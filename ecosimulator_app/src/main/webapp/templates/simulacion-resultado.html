@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Resultados de {{simulacion.nombre}}</title>
+    <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <style>
+        .simulation-detail {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: var(--space-md);
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-sm);
+        }
+
+        .metric-item .number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .metric-item .number.healthy { color: var(--state-healthy); }
+        .metric-item .number.warning { color: var(--state-warning); }
+        .metric-item .number.danger { color: var(--state-danger); }
+        .metric-item .number.critical { color: var(--state-critical); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📊 Resultados: {{simulacion.nombre}}</h1>
+        <p style="color: var(--text-secondary);">{{simulacion.descripcion}}</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/ecosimulator/dashboard">📊 Dashboard</a></li>
+            <li><a href="/ecosimulator/simulacion/ver/{{simulacion.id}}">🔍 Ver Simulación</a></li>
+            {{#isAdmin}}
+            <li><a href="/ecosimulator/admin">⚙️ Administración</a></li>
+            {{/isAdmin}}
+        </ul>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <span style="color: var(--text-secondary);">👤 {{username}}</span>
+            <a href="/ecosimulator/logout" style="color: var(--text-secondary);">🚪 Salir</a>
+        </div>
+    </nav>
+
+    <main style="margin-top: var(--space-lg);">
+        <div class="simulation-detail">
+            <div class="card">
+                <h3>📈 Métricas Principales</h3>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="number {{simulacion.sostenibilidadClase}}">{{simulacion.puntuacionSostenibilidad}}%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Sostenibilidad</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="number {{simulacion.biodiversidadClase}}">{{simulacion.puntuacionBiodiversidad}}%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Biodiversidad</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="number">{{simulacion.duracionSimulada}}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Años Simulados</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="number" style="text-transform: uppercase; font-size: 1.4rem;">{{simulacion.riesgoIcono}}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Riesgo Estimado</div>
+                    </div>
+                </div>
+            </div>
+
+            {{#simulacion.respuestaIa}}
+            <div class="card" style="margin-top: var(--space-md); border-left: 4px solid var(--color-secondary);">
+                <h3>🤖 Análisis con IA</h3>
+                <div style="white-space: pre-wrap; line-height: 1.8; color: var(--text-primary);">
+                    {{simulacion.respuestaIa}}
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: var(--space-md);">
+                    Modelo: {{simulacion.modeloIa}}
+                </p>
+            </div>
+            {{/simulacion.respuestaIa}}
+
+            <div style="margin-top: var(--space-lg);">
+                <a href="/ecosimulator/dashboard" class="btn-secondary" style="text-decoration: none; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-lg); display: inline-block;">
+                    ↩️ Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>🌿 EcoSimulator v1.0 - Resultados de Simulación</p>
+    </footer>
+</body>
+</html>

@@ -259,4 +259,68 @@ public class Simulacion {
     public void setActualizadoEn(Timestamp actualizadoEn) {
         this.actualizadoEn = actualizadoEn;
     }
+
+    // Métodos de utilidad para las plantillas Mustache
+    // (Mustache no soporta helpers tipo {{#equals a b}}, así que se
+    // precalculan aquí los valores derivados que las vistas necesitan)
+
+    public boolean isPendiente() {
+        return "pendiente".equals(estado);
+    }
+
+    public boolean isEjecutando() {
+        return "ejecutando".equals(estado);
+    }
+
+    public boolean isCompletada() {
+        return "completada".equals(estado);
+    }
+
+    public boolean isFallida() {
+        return "fallida".equals(estado);
+    }
+
+    public boolean isCancelada() {
+        return "cancelada".equals(estado);
+    }
+
+    public String getEstadoIcono() {
+        if (estado == null) return "";
+        switch (estado) {
+            case "pendiente": return "⏳ Pendiente";
+            case "configurando": return "⚙️ Configurando";
+            case "ejecutando": return "🔄 Ejecutando";
+            case "completada": return "✅ Completada";
+            case "fallida": return "❌ Fallida";
+            case "cancelada": return "⏹️ Cancelada";
+            default: return estado;
+        }
+    }
+
+    public String getRiesgoIcono() {
+        if (riesgoEstimado == null) return "--";
+        switch (riesgoEstimado) {
+            case "bajo": return "🟢 Bajo";
+            case "medio": return "🟡 Medio";
+            case "alto": return "🟠 Alto";
+            case "critico": return "🔴 Crítico";
+            default: return riesgoEstimado;
+        }
+    }
+
+    private static String claseParaPuntuacion(Integer puntuacion) {
+        if (puntuacion == null) return "";
+        if (puntuacion > 70) return "healthy";
+        if (puntuacion > 50) return "warning";
+        if (puntuacion > 30) return "danger";
+        return "critical";
+    }
+
+    public String getSostenibilidadClase() {
+        return claseParaPuntuacion(puntuacionSostenibilidad);
+    }
+
+    public String getBiodiversidadClase() {
+        return claseParaPuntuacion(puntuacionBiodiversidad);
+    }
 }

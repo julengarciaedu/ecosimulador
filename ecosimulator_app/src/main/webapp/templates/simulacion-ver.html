@@ -202,14 +202,7 @@
             <div class="status-header">
                 <div>
                     <span class="status-badge-large {{simulacion.estado}}">
-                        {{#simulacion.estado}}
-                            {{#equals simulacion.estado 'pendiente'}}⏳ Pendiente{{/equals}}
-                            {{#equals simulacion.estado 'configurando'}}⚙️ Configurando{{/equals}}
-                            {{#equals simulacion.estado 'ejecutando'}}🔄 Ejecutando{{/equals}}
-                            {{#equals simulacion.estado 'completada'}}✅ Completada{{/equals}}
-                            {{#equals simulacion.estado 'fallida'}}❌ Fallida{{/equals}}
-                            {{#equals simulacion.estado 'cancelada'}}⏹️ Cancelada{{/equals}}
-                        {{/simulacion.estado}}
+                        {{simulacion.estadoIcono}}
                     </span>
                 </div>
                 <div>
@@ -244,20 +237,14 @@
                 </div>
                 <div class="info-item">
                     <div class="value" style="text-transform: uppercase; font-size: 1.4rem;">
-                        {{#simulacion.riesgoEstimado}}
-                            {{#equals simulacion.riesgoEstimado 'bajo'}}🟢 Bajo{{/equals}}
-                            {{#equals simulacion.riesgoEstimado 'medio'}}🟡 Medio{{/equals}}
-                            {{#equals simulacion.riesgoEstimado 'alto'}}🟠 Alto{{/equals}}
-                            {{#equals simulacion.riesgoEstimado 'critico'}}🔴 Crítico{{/equals}}
-                        {{/simulacion.riesgoEstimado}}
-                        {{^simulacion.riesgoEstimado}}--{{/simulacion.riesgoEstimado}}
+                        {{simulacion.riesgoIcono}}
                     </div>
                     <div class="label">⚠️ Riesgo Estimado</div>
                 </div>
             </div>
             
             <!-- Resultados (si está completada) -->
-            {{#equals simulacion.estado 'completada'}}
+            {{#simulacion.completada}}
             <div class="result-section">
                 <h2>📊 Resultados de la Simulación</h2>
                 
@@ -265,13 +252,13 @@
                     <h3>📈 Métricas Principales</h3>
                     <div class="metric-grid">
                         <div class="metric-item">
-                            <div class="number {{#simulacion.puntuacionSostenibilidad}}{{#gt . 70}}healthy{{/gt}}{{#lte . 70}}{{#gt . 50}}warning{{/gt}}{{/lte}}{{#lte . 50}}{{#gt . 30}}danger{{/gt}}{{/lte}}{{#lte . 30}}critical{{/lte}}{{/simulacion.puntuacionSostenibilidad}}">
+                            <div class="number {{simulacion.sostenibilidadClase}}">
                                 {{simulacion.puntuacionSostenibilidad}}%
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">Sostenibilidad</div>
                         </div>
                         <div class="metric-item">
-                            <div class="number {{#simulacion.puntuacionBiodiversidad}}{{#gt . 70}}healthy{{/gt}}{{#lte . 70}}{{#gt . 50}}warning{{/gt}}{{/lte}}{{#lte . 50}}{{#gt . 30}}danger{{/gt}}{{/lte}}{{#lte . 30}}critical{{/lte}}{{/simulacion.puntuacionBiodiversidad}}">
+                            <div class="number {{simulacion.biodiversidadClase}}">
                                 {{simulacion.puntuacionBiodiversidad}}%
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">Biodiversidad</div>
@@ -313,41 +300,41 @@
                     </button>
                 </div>
             </div>
-            {{/equals}}
-            
+            {{/simulacion.completada}}
+
             <!-- Acciones (si no está completada) -->
-            {{^equals simulacion.estado 'completada'}}
+            {{^simulacion.completada}}
             <div class="action-buttons">
-                {{#equals simulacion.estado 'pendiente'}}
+                {{#simulacion.pendiente}}
                 <button onclick="ejecutarSimulacion({{simulacion.id}})" class="btn-success">
                     🚀 Ejecutar Simulación
                 </button>
-                {{/equals}}
-                
-                {{#equals simulacion.estado 'ejecutando'}}
+                {{/simulacion.pendiente}}
+
+                {{#simulacion.ejecutando}}
                 <button onclick="cancelarSimulacion({{simulacion.id}})" class="btn-danger">
                     ⏹️ Cancelar Simulación
                 </button>
-                {{/equals}}
-                
+                {{/simulacion.ejecutando}}
+
                 <button onclick="eliminarSimulacion({{simulacion.id}})" class="btn-danger">
                     🗑️ Eliminar Simulación
                 </button>
-                
+
                 <a href="/ecosimulator/dashboard" class="btn-secondary" style="text-align: center; text-decoration: none; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-lg);">
                     ↩️ Volver al Dashboard
                 </a>
             </div>
-            {{/equals}}
-            
+            {{/simulacion.completada}}
+
             <!-- Botón volver siempre visible -->
-            {{#equals simulacion.estado 'completada'}}
+            {{#simulacion.completada}}
             <div style="margin-top: var(--space-md);">
                 <a href="/ecosimulator/dashboard" class="btn-secondary" style="text-align: center; text-decoration: none; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-lg); display: inline-block;">
                     ↩️ Volver al Dashboard
                 </a>
             </div>
-            {{/equals}}
+            {{/simulacion.completada}}
         </div>
     </main>
     
@@ -450,7 +437,7 @@
         }
         
         // Actualizar progreso automáticamente si está ejecutando
-        {{#equals simulacion.estado 'ejecutando'}}
+        {{#simulacion.ejecutando}}
         setInterval(function() {
             fetch('/ecosimulator/simulacion/progreso/{{simulacion.id}}')
             .then(response => response.json())
@@ -465,7 +452,7 @@
             })
             .catch(error => console.error('Error actualizando progreso:', error));
         }, 3000);
-        {{/equals}}
+        {{/simulacion.ejecutando}}
     </script>
 </body>
 </html>
