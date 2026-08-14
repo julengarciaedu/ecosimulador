@@ -8,6 +8,7 @@ import maricomputa.ecosimulator.modelo.entidad.Habitat;
 import maricomputa.ecosimulator.modelo.entidad.Simulacion;
 import maricomputa.ecosimulator.modelo.entidad.Especie;
 import maricomputa.ecosimulator.mustache.RenderVista;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -27,7 +28,8 @@ public class SimulacionServlet extends HttpServlet {
     private SimulacionDao simulacionDAO;
     private HabitatDao habitatDAO;
     private EspecieDao especieDAO;
-    
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void init() throws ServletException {
         simulacionDAO = new SimulacionDao();
@@ -208,8 +210,9 @@ public class SimulacionServlet extends HttpServlet {
             parametros.put("especiesIds", especiesSeleccionadas);
         }
         
-        // Convertir parámetros a JSON (simplificado)
-        simulacion.setParametrosConfiguracion(parametros.toString());
+        // Convertir parámetros a JSON real (la columna es de tipo JSON en MySQL,
+        // Map.toString() no es JSON válido y la inserción fallaba)
+        simulacion.setParametrosConfiguracion(objectMapper.writeValueAsString(parametros));
         
         // Guardar en base de datos
         simulacionDAO.insert(simulacion);

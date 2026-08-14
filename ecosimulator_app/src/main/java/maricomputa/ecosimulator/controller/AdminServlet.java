@@ -46,10 +46,32 @@ public class AdminServlet extends HttpServlet {
             mostrarDashboard(request, response);
         } else if (path.equals("/usuarios")) {
             listarUsuarios(request, response);
+        } else if (path.equals("/usuarios/activos")) {
+            listarUsuariosFiltrado(request, response, true);
+        } else if (path.equals("/usuarios/inactivos")) {
+            listarUsuariosFiltrado(request, response, false);
         } else if (path.equals("/especies")) {
             listarEspecies(request, response);
+        } else if (path.equals("/especies/protegidas")) {
+            listarEspeciesFiltrado(request, response, "protegidas");
+        } else if (path.equals("/especies/amenazadas")) {
+            listarEspeciesFiltrado(request, response, "amenazadas");
+        } else if (path.equals("/especies/invasoras")) {
+            listarEspeciesFiltrado(request, response, "invasoras");
         } else if (path.equals("/habitats")) {
             listarHabitats(request, response);
+        } else if (path.equals("/habitats/protegidos")) {
+            listarHabitatsFiltrado(request, response, "protegidos");
+        } else if (path.equals("/habitats/biodiversidad")) {
+            listarHabitatsFiltrado(request, response, "biodiversidad");
+        } else if (path.equals("/simulaciones")) {
+            listarSimulaciones(request, response, null, "Todas las Simulaciones");
+        } else if (path.equals("/simulaciones/activas")) {
+            listarSimulaciones(request, response, "ejecutando", "Simulaciones en Ejecución");
+        } else if (path.equals("/simulaciones/completadas")) {
+            listarSimulaciones(request, response, "completada", "Simulaciones Completadas");
+        } else if (path.equals("/simulaciones/fallidas")) {
+            listarSimulaciones(request, response, "fallida", "Simulaciones Fallidas");
         } else if (path.equals("/usuario/nuevo")) {
             mostrarFormularioNuevoUsuario(request, response);
         } else if (path.equals("/especie/nueva")) {
@@ -197,6 +219,90 @@ public class AdminServlet extends HttpServlet {
             datos.put("habitats", habitats);
             prepararContexto(datos, request);
             RenderVista.renderizarVista(response, getServletContext().getRealPath("templates/admin-habitats.html"), datos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void listarUsuariosFiltrado(HttpServletRequest request, HttpServletResponse response, boolean activo)
+            throws ServletException, IOException {
+        try {
+            List<Usuario> usuarios = usuarioDAO.findAll().stream()
+                    .filter(u -> u.isActivo() == activo)
+                    .collect(java.util.stream.Collectors.toList());
+            Map<String, Object> datos = new HashMap();
+            datos.put("usuarios", usuarios);
+            prepararContexto(datos, request);
+            RenderVista.renderizarVista(response, getServletContext().getRealPath("templates/admin-usuarios.html"), datos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void listarEspeciesFiltrado(HttpServletRequest request, HttpServletResponse response, String filtro)
+            throws ServletException, IOException {
+        try {
+            List<Especie> especies = especieDAO.findAll().stream()
+                    .filter(e -> {
+                        switch (filtro) {
+                            case "protegidas": return e.isEsProtegida();
+                            case "invasoras": return e.isEsInvasora();
+                            case "amenazadas":
+                                return e.getEstadoConservacion() != null
+                                        && (e.getEstadoConservacion().equals("CR")
+                                            || e.getEstadoConservacion().equals("EN")
+                                            || e.getEstadoConservacion().equals("VU"));
+                            default: return true;
+                        }
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            Map<String, Object> datos = new HashMap();
+            datos.put("especies", especies);
+            prepararContexto(datos, request);
+            RenderVista.renderizarVista(response, getServletContext().getRealPath("templates/admin-especies.html"), datos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void listarHabitatsFiltrado(HttpServletRequest request, HttpServletResponse response, String filtro)
+            throws ServletException, IOException {
+        try {
+            List<Habitat> habitats = habitatDAO.findAll().stream()
+                    .filter(h -> {
+                        switch (filtro) {
+                            case "protegidos":
+                                return h.getEstatusProteccion() != null && !h.getEstatusProteccion().equals("sin_proteccion");
+                            case "biodiversidad":
+                                return h.getBiodiversidadIndex() != null && h.getBiodiversidadIndex().doubleValue() > 0.7;
+                            default: return true;
+                        }
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            Map<String, Object> datos = new HashMap();
+            datos.put("habitats", habitats);
+            prepararContexto(datos, request);
+            RenderVista.renderizarVista(response, getServletContext().getRealPath("templates/admin-habitats.html"), datos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void listarSimulaciones(HttpServletRequest request, HttpServletResponse response, String estado, String titulo)
+            throws ServletException, IOException {
+        try {
+            List<Simulacion> simulaciones = estado == null
+                    ? simulacionDAO.findAll()
+                    : simulacionDAO.findByEstado(estado);
+            Map<String, Object> datos = new HashMap();
+            datos.put("simulaciones", simulaciones);
+            datos.put("titulo", titulo);
+            prepararContexto(datos, request);
+            RenderVista.renderizarVista(response, getServletContext().getRealPath("templates/admin-simulaciones.html"), datos);
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

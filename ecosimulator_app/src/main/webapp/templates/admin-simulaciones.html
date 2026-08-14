@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - {{titulo}}</title>
+    <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <style>
+        .simulaciones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .simulacion-card h4 {
+            color: var(--color-primary);
+            margin: 0 0 var(--space-xs) 0;
+        }
+
+        .simulacion-card .meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.pendiente { background: #ebf5fb; color: #3498db; }
+        .status-badge.configurando { background: #fdebd0; color: #e67e22; }
+        .status-badge.ejecutando { background: #fef9e7; color: #f39c12; }
+        .status-badge.completada { background: #d5f5e3; color: #27ae60; }
+        .status-badge.fallida { background: #fadbd8; color: #e74c3c; }
+        .status-badge.cancelada { background: #e8e8e8; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔄 {{titulo}}</h1>
+        <p style="color: var(--text-secondary);">Administra las simulaciones del sistema</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/ecosimulator/dashboard">📊 Dashboard</a></li>
+            <li><a href="/ecosimulator/admin">⚙️ Administración</a></li>
+            <li><a href="/ecosimulator/admin/simulaciones" style="font-weight: 700; color: var(--color-primary);">🔄 Simulaciones</a></li>
+        </ul>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <span style="color: var(--text-secondary);">👤 {{username}} (Admin)</span>
+            <a href="/ecosimulator/logout" style="color: var(--text-secondary);">🚪 Salir</a>
+        </div>
+    </nav>
+
+    <main style="margin-top: var(--space-lg);">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div class="simulaciones-grid">
+                {{#simulaciones}}
+                <div class="card simulacion-card">
+                    <h4>{{nombre}}</h4>
+                    <div class="meta">📅 {{creadoEn}}</div>
+                    <span class="status-badge {{estado}}">{{estadoIcono}}</span>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: var(--space-sm);">{{descripcion}}</p>
+                    <a href="/ecosimulator/simulacion/ver/{{id}}" class="btn-primary"
+                       style="margin-top: var(--space-md); display: inline-block; text-decoration: none;">
+                        👁️ Ver Simulación
+                    </a>
+                </div>
+                {{/simulaciones}}
+                {{^simulaciones}}
+                <p style="grid-column: 1 / -1; text-align: center; padding: var(--space-xl); color: var(--text-secondary);">
+                    No hay simulaciones que coincidan con este filtro
+                </p>
+                {{/simulaciones}}
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>🌿 EcoSimulator v1.0 - {{titulo}}</p>
+    </footer>
+</body>
+</html>
