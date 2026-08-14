@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - {{simulacion.nombre}}</title>
     <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .simulation-detail {
             max-width: 1000px;
@@ -306,7 +307,7 @@
             {{^simulacion.completada}}
             <div class="action-buttons">
                 {{#simulacion.pendiente}}
-                <button onclick="ejecutarSimulacion({{simulacion.id}})" class="btn-success">
+                <button onclick="ejecutarSimulacion({{simulacion.id}}, this)" class="btn-success">
                     🚀 Ejecutar Simulación
                 </button>
                 {{/simulacion.pendiente}}
@@ -344,12 +345,12 @@
     
     <script>
         // Función para ejecutar simulación
-        function ejecutarSimulacion(id) {
-            if (confirm('¿Estás seguro de que quieres ejecutar esta simulación?')) {
-                const btn = event.target;
+        async function ejecutarSimulacion(id, btn) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres ejecutar esta simulación?', { tipo: 'info', textoAceptar: '🚀 Ejecutar' });
+            if (confirmado) {
                 btn.textContent = '⏳ Ejecutando...';
                 btn.disabled = true;
-                
+
                 fetch('/ecosimulator/simulacion/ejecutar', {
                     method: 'POST',
                     headers: {
@@ -376,16 +377,18 @@
         }
         
         // Función para cancelar simulación
-        function cancelarSimulacion(id) {
-            if (confirm('¿Estás seguro de que quieres cancelar esta simulación?')) {
+        async function cancelarSimulacion(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres cancelar esta simulación?', { tipo: 'info', textoAceptar: '⏹️ Sí, cancelar' });
+            if (confirmado) {
                 // Implementar cancelación
                 alert('Función en desarrollo');
             }
         }
-        
+
         // Función para eliminar simulación
-        function eliminarSimulacion(id) {
-            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar esta simulación? Esta acción no se puede deshacer.')) {
+        async function eliminarSimulacion(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar esta simulación? Esta acción no se puede deshacer.');
+            if (confirmado) {
                 fetch('/ecosimulator/simulacion/eliminar', {
                     method: 'POST',
                     headers: {
@@ -407,8 +410,8 @@
         }
         
         // Función para compartir simulación
-        function compartirSimulacion(id) {
-            const publicar = confirm('¿Quieres hacer pública esta simulación?');
+        async function compartirSimulacion(id) {
+            const publicar = await confirmarAccion('¿Quieres hacer pública esta simulación?', { tipo: 'info', textoAceptar: '🔗 Compartir' });
             if (publicar) {
                 fetch('/ecosimulator/simulacion/compartir', {
                     method: 'POST',

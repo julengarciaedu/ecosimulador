@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - Gestión de Usuarios</title>
             <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .table-container {
             overflow-x: auto;
@@ -224,8 +225,9 @@
         }
         
         // Función para eliminar usuario
-        function eliminarUsuario(id) {
-            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+        async function eliminarUsuario(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.');
+            if (confirmado) {
                 fetch('/ecosimulator/admin/usuario/eliminar', {
                     method: 'POST',
                     headers: {

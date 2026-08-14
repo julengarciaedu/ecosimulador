@@ -735,6 +735,93 @@ dialog::backdrop {
     -webkit-backdrop-filter: blur(10px);
 }
 
+/* ===== 19b. VARIANTES DE BOTÓN (aplicables a <button> y <a>) ===== */
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+    display: inline-block;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--space-sm) var(--space-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition-bounce);
+}
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-danger:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--text-light);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+    color: var(--text-light);
+}
+
+.btn-secondary {
+    background: var(--color-earth-light);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--color-earth);
+    color: var(--text-primary);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--state-danger), var(--state-critical));
+    color: var(--text-light);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b, var(--state-critical));
+    color: var(--text-light);
+}
+
+/* ===== 19c. DIÁLOGO DE CONFIRMACIÓN (sustituye a window.confirm) ===== */
+.confirm-dialog {
+    max-width: 420px;
+    text-align: center;
+}
+
+.confirm-dialog .confirm-dialog-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-sm);
+}
+
+.confirm-dialog .confirm-dialog-mensaje {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 var(--space-lg) 0;
+}
+
+.confirm-dialog .confirm-dialog-actions {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.confirm-dialog .confirm-dialog-actions button {
+    flex: 1;
+}
+
+.confirm-dialog.confirm-dialog-danger {
+    border-top: 4px solid var(--state-danger);
+}
+
 /* ===== 20. NOTIFICACIONES ===== */
 .notification {
     position: fixed;

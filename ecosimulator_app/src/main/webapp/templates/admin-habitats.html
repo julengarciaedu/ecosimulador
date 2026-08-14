@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - Gestión de Hábitats</title>
     <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .habitat-grid {
             display: grid;
@@ -275,8 +276,9 @@
             });
         }
         
-        function eliminarHabitat(id) {
-            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar este hábitat? Se eliminarán todas las simulaciones asociadas.')) {
+        async function eliminarHabitat(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar este hábitat? Se eliminarán todas las simulaciones asociadas.');
+            if (confirmado) {
                 fetch('/ecosimulator/admin/habitat/eliminar', {
                     method: 'POST',
                     headers: {

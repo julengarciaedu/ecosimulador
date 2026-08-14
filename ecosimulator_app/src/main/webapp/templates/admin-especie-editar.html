@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - Editar Especie</title>
     <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .edit-container {
             max-width: 800px;
@@ -295,8 +296,8 @@
                 </form>
                 
                 <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid rgba(45, 106, 79, 0.1);">
-                    <form action="/ecosimulator/admin/especie/eliminar" method="POST" 
-                          onsubmit="return confirm('⚠️ ¿Estás seguro de que quieres eliminar esta especie? Esta acción no se puede deshacer.');">
+                    <form action="/ecosimulator/admin/especie/eliminar" method="POST"
+                          onsubmit="return confirmarEnvioFormulario(event, '¿Estás seguro de que quieres eliminar esta especie? Esta acción no se puede deshacer.');">
                         <input type="hidden" name="id" value="{{especie.id}}">
                         <button type="submit" class="btn-danger" style="width: 100%;">🗑️ Eliminar Especie</button>
                     </form>
