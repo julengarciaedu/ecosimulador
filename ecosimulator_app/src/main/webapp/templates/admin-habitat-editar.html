@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Editar Hábitat</title>
+    <link rel="stylesheet" href="../css/ecostyles.css">
+    <style>
+        .edit-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+        
+        .form-full {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-md);
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--color-forest-dark);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: var(--space-sm) var(--space-md);
+            border: 2px solid rgba(45, 106, 79, 0.15);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+            font-family: var(--font-primary);
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--color-secondary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(82, 183, 136, 0.15);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+        
+        .btn-group button {
+            flex: 1;
+            padding: var(--space-md);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-secondary {
+            background: var(--color-earth-light);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--color-earth);
+        }
+        
+        .info-box {
+            background: rgba(82, 183, 136, 0.1);
+            border-left: 4px solid var(--color-secondary);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            margin: var(--space-md) 0;
+        }
+        
+        .info-box h4 {
+            color: var(--color-primary);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .info-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>✏️ Editar Hábitat</h1>
+        <p style="color: var(--text-secondary);">Modifica los datos del hábitat</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/ecosimulator/admin/dashboard">⚙️ Administración</a></li>
+            <li><a href="/ecosimulator/admin/habitats">🏞️ Hábitats</a></li>
+            <li><a href="/ecosimulator/admin/habitat/editar/{{habitat.id}}" style="font-weight: 700; color: var(--color-primary);">✏️ Editar</a></li>
+        </ul>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <span style="color: var(--text-secondary);">👤 {{username}}</span>
+            <a href="/ecosimulator/logout" style="color: var(--text-secondary);">🚪 Salir</a>
+        </div>
+    </nav>
+    
+    <main style="margin-top: var(--space-lg);">
+        <div class="edit-container">
+            <div class="card">
+                <form action="/ecosimulator/admin/habitat/actualizar" method="POST">
+                    <input type="hidden" name="id" value="{{habitat.id}}">
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nombre">🏷️ Nombre</label>
+                            <input type="text" id="nombre" name="nombre" 
+                                   value="{{habitat.nombre}}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tipoBioma">🌍 Tipo de Bioma</label>
+                            <select id="tipoBioma" name="tipoBioma">
+                                <option value="bosque_tropical" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Bosque Tropical</option>
+                                <option value="bosque_templado" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Bosque Templado</option>
+                                <option value="bosque_boreal" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Bosque Boreal</option>
+                                <option value="pradera_tropical" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Pradera Tropical</option>
+                                <option value="pradera_templada" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Pradera Templada</option>
+                                <option value="desierto_calido" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Desierto Cálido</option>
+                                <option value="desierto_frio" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Desierto Frío</option>
+                                <option value="tundra_artica" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Tundra Ártica</option>
+                                <option value="sabana" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Sabana</option>
+                                <option value="humedal" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Humedal</option>
+                                <option value="manglar" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Manglar</option>
+                                <option value="marino_costero" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Marino Costero</option>
+                                <option value="arrecife_coral" {{#habitat.tipoBioma}}selected{{/habitat.tipoBioma}}>Arrecife de Coral</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pais">🌎 País</label>
+                            <input type="text" id="pais" name="pais" value="{{habitat.pais}}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="region">📍 Región</label>
+                            <input type="text" id="region" name="region" value="{{habitat.region}}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="latitud">🗺️ Latitud</label>
+                            <input type="number" id="latitud" name="latitud" 
+                                   value="{{habitat.latitud}}" step="0.00000001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="longitud">🗺️ Longitud</label>
+                            <input type="number" id="longitud" name="longitud" 
+                                   value="{{habitat.longitud}}" step="0.00000001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="altitudMin">⛰️ Altitud Mínima (m)</label>
+                            <input type="number" id="altitudMin" name="altitudMin" 
+                                   value="{{habitat.altitudMin}}" step="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="altitudMax">⛰️ Altitud Máxima (m)</label>
+                            <input type="number" id="altitudMax" name="altitudMax" 
+                                   value="{{habitat.altitudMax}}" step="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="areaTotal">📐 Área Total (km²)</label>
+                            <input type="number" id="areaTotal" name="areaTotal" 
+                                   value="{{habitat.areaTotal}}" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="temperaturaPromedio">🌡️ Temperatura Promedio (°C)</label>
+                            <input type="number" id="temperaturaPromedio" name="temperaturaPromedio" 
+                                   value="{{habitat.temperaturaPromedio}}" step="0.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="precipitacionAnual">💧 Precipitación Anual (mm)</label>
+                            <input type="number" id="precipitacionAnual" name="precipitacionAnual" 
+                                   value="{{habitat.precipitacionAnualPromedio}}" step="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="biodiversidadIndex">🐾 Índice de Biodiversidad (0-1)</label>
+                            <input type="number" id="biodiversidadIndex" name="biodiversidadIndex" 
+                                   value="{{habitat.biodiversidadIndex}}" step="0.001" min="0" max="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="estatusProteccion">🛡️ Estatus de Protección</label>
+                            <select id="estatusProteccion" name="estatusProteccion">
+                                <option value="sin_proteccion" {{#habitat.estatusProteccion}}selected{{/habitat.estatusProteccion}}>Sin Protección</option>
+                                <option value="parcial" {{#habitat.estatusProteccion}}selected{{/habitat.estatusProteccion}}>Protección Parcial</option>
+                                <option value="total" {{#habitat.estatusProteccion}}selected{{/habitat.estatusProteccion}}>Protección Total</option>
+                                <option value="reserva" {{#habitat.estatusProteccion}}selected{{/habitat.estatusProteccion}}>Reserva</option>
+                                <option value="parque_nacional" {{#habitat.estatusProteccion}}selected{{/habitat.estatusProteccion}}>Parque Nacional</option>
+                                <option value="unesco" {{#habitat.estatusProteccion}}selected{{/habitat.estatusProteccion}}>Patrimonio UNESCO</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="calidadAgua">💧 Calidad del Agua</label>
+                            <select id="calidadAgua" name="calidadAgua">
+                                <option value="excelente" {{#habitat.calidadAgua}}selected{{/habitat.calidadAgua}}>Excelente</option>
+                                <option value="buena" {{#habitat.calidadAgua}}selected{{/habitat.calidadAgua}}>Buena</option>
+                                <option value="regular" {{#habitat.calidadAgua}}selected{{/habitat.calidadAgua}}>Regular</option>
+                                <option value="mala" {{#habitat.calidadAgua}}selected{{/habitat.calidadAgua}}>Mala</option>
+                                <option value="critica" {{#habitat.calidadAgua}}selected{{/habitat.calidadAgua}}>Crítica</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-full">
+                            <div class="form-group">
+                                <label for="descripcion">📝 Descripción</label>
+                                <textarea id="descripcion" name="descripcion" rows="3">{{habitat.descripcion}}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-full">
+                            <div class="form-group">
+                                <label for="amenazas">⚠️ Amenazas</label>
+                                <textarea id="amenazas" name="amenazas" rows="2">{{habitat.amenazas}}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-full">
+                            <div class="form-group">
+                                <label for="medidasConservacion">🌱 Medidas de Conservación</label>
+                                <textarea id="medidasConservacion" name="medidasConservacion" rows="2">{{habitat.medidasConservacion}}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-full">
+                            <div class="form-group">
+                                <label for="imagenPortada">🖼️ URL de la Imagen de Portada</label>
+                                <input type="text" id="imagenPortada" name="imagenPortada" 
+                                       value="{{habitat.imagenPortada}}" placeholder="https://ejemplo.com/imagen.jpg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4>💡 Información del Hábitat</h4>
+                        <p>
+                            📅 Creado: {{habitat.creadoEn}}<br>
+                            🔄 Última actualización: {{habitat.actualizadoEn}}<br>
+                            📊 Índice de Biodiversidad: {{habitat.biodiversidadIndex}}
+                        </p>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
+                        <a href="/ecosimulator/admin/habitats" class="btn-secondary" 
+                           style="text-align: center; text-decoration: none; padding: var(--space-md); border-radius: var(--radius-lg);">
+                            ↩️ Cancelar
+                        </a>
+                    </div>
+                </form>
+                
+                <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid rgba(45, 106, 79, 0.1);">
+                    <form action="/ecosimulator/admin/habitat/eliminar" method="POST" 
+                          onsubmit="return confirm('⚠️ ¿Estás seguro de que quieres eliminar este hábitat? Se eliminarán todas las simulaciones asociadas.');">
+                        <input type="hidden" name="id" value="{{habitat.id}}">
+                        <button type="submit" class="btn-danger" style="width: 100%;">🗑️ Eliminar Hábitat</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>🌿 EcoSimulator v1.0 - Editar Hábitat</p>
+    </footer>
+</body>
+</html>

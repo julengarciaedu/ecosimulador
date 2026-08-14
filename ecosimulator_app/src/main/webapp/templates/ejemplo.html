@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Dashboard</title>
+    <link rel="stylesheet" href="/ecosimulator/css/styles.css">
+</head>
+<body data-ecosystem-state="balanced">
+    
+    <!-- ===== HEADER ===== -->
+    <header>
+        <h1>🌿 Simulador de Ecosistemas</h1>
+        <p style="color: var(--text-secondary); font-size: 1.1rem;">
+            Explora la dinámica de los ecosistemas
+        </p>
+    </header>
+    
+    <!-- ===== NAVEGACIÓN ===== -->
+    <nav>
+        <ul>
+            <li><a href="/dashboard">📊 Dashboard</a></li>
+            <li><a href="/simulacion/nueva">🔄 Nueva Simulación</a></li>
+            <li><a href="/especies">🌱 Especies</a></li>
+            <li><a href="/habitats">🏞️ Hábitats</a></li>
+        </ul>
+        
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <span class="eco-status">Ecosistema en Equilibrio</span>
+            <a href="/logout" style="color: var(--text-secondary);">🚪 Salir</a>
+        </div>
+    </nav>
+    
+    <!-- ===== MAIN CONTENT ===== -->
+    <main style="margin-top: var(--space-lg);">
+        
+        <!-- Estadísticas -->
+        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+            <article>
+                <h3>Total Simulaciones</h3>
+                <p style="font-size: 2.5rem; font-weight: 700; color: var(--color-primary);">24</p>
+            </article>
+            
+            <article>
+                <h3>Completadas</h3>
+                <p style="font-size: 2.5rem; font-weight: 700; color: var(--color-secondary);">18</p>
+            </article>
+            
+            <article>
+                <h3>Activas</h3>
+                <p style="font-size: 2.5rem; font-weight: 700; color: var(--color-earth);">3</p>
+            </article>
+            
+            <article>
+                <h3>Biodiversidad</h3>
+                <p style="font-size: 2.5rem; font-weight: 700; color: var(--color-water-deep);">85%</p>
+            </article>
+        </section>
+        
+        <!-- Lista de Simulaciones -->
+        <section style="margin-top: var(--space-lg);">
+            <h2>📊 Mis Simulaciones</h2>
+            
+            <div style="margin-top: var(--space-md);">
+                <article data-simulation-score="75">
+                    <h3>Bosque Mediterráneo</h3>
+                    <p>Simulación de 50 años en ecosistema mediterráneo</p>
+                    <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-sm);">
+                        <span class="eco-badge healthy">🌳 Saludable</span>
+                        <span>Estado: Completada</span>
+                        <span>Duración: 50 años</span>
+                    </div>
+                </article>
+                
+                <article data-simulation-score="45" style="margin-top: var(--space-md);">
+                    <h3>Humedal Costero</h3>
+                    <p>Simulación de impacto del cambio climático</p>
+                    <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-sm);">
+                        <span class="eco-badge warning">⚠️ Vulnerable</span>
+                        <span>Estado: En ejecución</span>
+                        <span>Duración: 30 años</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+        
+        <!-- Formulario de Nueva Simulación -->
+        <section style="margin-top: var(--space-lg);">
+            <h2>🔄 Nueva Simulación</h2>
+            
+            <form action="/simulacion/nueva" method="POST" style="margin-top: var(--space-md);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                    <div>
+                        <label for="nombre">Nombre de la Simulación</label>
+                        <input type="text" id="nombre" name="nombre" 
+                               placeholder="Ej: Bosque Tropical" required>
+                    </div>
+                    
+                    <div>
+                        <label for="habitat">Hábitat</label>
+                        <select id="habitat" name="habitatId">
+                            <option value="1">Bosque de Irati</option>
+                            <option value="2">Doñana</option>
+                            <option value="3">Sierra de Guadarrama</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="duracion">Duración (años)</label>
+                        <input type="number" id="duracion" name="duracion" 
+                               value="50" min="10" max="200" required>
+                    </div>
+                    
+                    <div>
+                        <label for="temperatura">Temperatura Inicial (°C)</label>
+                        <input type="number" id="temperatura" name="temperatura" 
+                               value="15" step="0.5" required>
+                    </div>
+                    
+                    <div style="grid-column: 1 / -1;">
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" name="descripcion" 
+                                  placeholder="Describe el contexto de la simulación..."></textarea>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: var(--space-md); margin-top: var(--space-md);">
+                    <button type="submit">🚀 Iniciar Simulación</button>
+                    <button type="reset" style="background: var(--color-earth-light); color: var(--text-primary);">
+                        Limpiar
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <!-- Resultados de Simulación -->
+        <section style="margin-top: var(--space-lg);">
+            <h2>📈 Análisis de Resultados</h2>
+            
+            <article style="margin-top: var(--space-md);">
+                <h3>Resumen Ejecutivo</h3>
+                <p>
+                    La simulación muestra un ecosistema en equilibrio con tendencia positiva.
+                    La biodiversidad se ha mantenido estable con un índice de Simpson de 0.85.
+                </p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-top: var(--space-md);">
+                    <div style="background: rgba(45, 106, 79, 0.05); padding: var(--space-md); border-radius: var(--radius-md);">
+                        <strong>🌱 Sostenibilidad</strong>
+                        <p style="font-size: 2rem; color: var(--color-primary);">78%</p>
+                    </div>
+                    
+                    <div style="background: rgba(45, 106, 79, 0.05); padding: var(--space-md); border-radius: var(--radius-md);">
+                        <strong>🐾 Biodiversidad</strong>
+                        <p style="font-size: 2rem; color: var(--color-secondary);">85%</p>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+    
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <p>🌿 EcoSimulator v1.0 - Simulador de Ecosistemas con Inteligencia Artificial</p>
+        <p style="font-size: 0.8rem; opacity: 0.7;">
+            Datos basados en modelos ecológicos reales
+        </p>
+    </footer>
+    
+    <!-- ===== SCRIPTS ===== -->
+    <script src="/ecosimulator/js/eco-simulator.js"></script>
+</body>
+</html>

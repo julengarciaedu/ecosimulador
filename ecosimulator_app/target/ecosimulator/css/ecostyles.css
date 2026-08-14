@@ -1,0 +1,782 @@
+/* ============================================
+   styles.css - EcoSimulator Design System
+   ============================================
+   Filosofía: Diseño biofílico que evoluciona
+   con el ecosistema simulado
+   ============================================ */
+
+/* ===== 1. ROOT VARIABLES ===== */
+:root {
+    /* Color Palette - Tierra y Naturaleza */
+    --color-primary: #2d6a4f;
+    --color-primary-light: #40916c;
+    --color-primary-dark: #1b4332;
+    --color-secondary: #52b788;
+    --color-accent: #95d5b2;
+    --color-earth: #d4a373;
+    --color-earth-light: #faedcd;
+    --color-water: #48cae4;
+    --color-water-deep: #023e8a;
+    --color-sky: #ade8f4;
+    --color-sun: #ffd60a;
+    
+    /* Neutrales */
+    --color-forest-dark: #1a2e1f;
+    --color-forest-mid: #2d4a33;
+    --color-leaf: #6b8c5d;
+    --color-bark: #8b7355;
+    --color-moss: #7a8c5a;
+    
+    /* Textos */
+    --text-primary: #1a2e1f;
+    --text-secondary: #3d5a40;
+    --text-light: #f0f7ee;
+    
+    /* Estados */
+    --state-healthy: #2d6a4f;
+    --state-warning: #d4a373;
+    --state-danger: #b53b3b;
+    --state-critical: #7a1a1a;
+    
+    /* Shadows & Effects */
+    --shadow-soft: 0 8px 32px rgba(45, 106, 79, 0.12);
+    --shadow-medium: 0 12px 48px rgba(45, 106, 79, 0.18);
+    --shadow-strong: 0 16px 64px rgba(45, 106, 79, 0.25);
+    
+    /* Transitions */
+    --transition-smooth: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-bounce: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-organic: all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    
+    /* Typography */
+    --font-primary: 'Segoe UI', 'Helvetica Neue', system-ui, -apple-system, sans-serif;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 2rem;
+    --space-xl: 4rem;
+    --space-xxl: 6rem;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+}
+
+/* ===== 2. RESET & BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+::selection {
+    background: var(--color-primary);
+    color: var(--text-light);
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-primary);
+    background: linear-gradient(170deg, #f0f7ee 0%, #e8f0e5 50%, #dae8d5 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    padding: var(--space-lg);
+    transition: var(--transition-organic);
+    position: relative;
+}
+
+/* ===== 3. PATRÓN DE FONDO ORGÁNICO ===== */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(82, 183, 136, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 80% 20%, rgba(45, 106, 79, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(149, 213, 178, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ===== 4. TIPOGRAFÍA NATURAL ===== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--color-forest-dark);
+    line-height: 1.2;
+    margin-bottom: var(--space-md);
+    position: relative;
+}
+
+h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--color-primary-dark), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+h2 {
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    color: var(--color-primary);
+    border-left: 4px solid var(--color-accent);
+    padding-left: var(--space-md);
+}
+
+h3 {
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    color: var(--color-forest-mid);
+}
+
+/* ===== 5. ENLACES Y BOTONES ORGÁNICOS ===== */
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    position: relative;
+    transition: var(--transition-smooth);
+    font-weight: 500;
+}
+
+a:hover {
+    color: var(--color-secondary);
+}
+
+/* Enlace con efecto "rama" */
+a:not(.no-underline)::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    transition: var(--transition-smooth);
+}
+
+a:hover::after {
+    width: 100%;
+}
+
+button, 
+input[type="submit"],
+input[type="reset"] {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--text-light);
+    border: none;
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-bounce);
+    position: relative;
+    overflow: hidden;
+    font-family: var(--font-primary);
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow-soft);
+}
+
+button:hover,
+input[type="submit"]:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-medium);
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+}
+
+button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Efecto "hoja" en botones */
+button::before {
+    content: '🌱';
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+button:hover::before {
+    opacity: 1;
+    transform: rotate(20deg) translate(-10px, 10px);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ===== 6. FORMULARIOS ===== */
+form {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: var(--transition-organic);
+}
+
+form:hover {
+    box-shadow: var(--shadow-medium);
+    border-color: rgba(82, 183, 136, 0.2);
+}
+
+label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-weight: 500;
+    color: var(--color-forest-dark);
+    font-size: 0.95rem;
+}
+
+input:not([type="submit"]):not([type="reset"]):not([type="button"]),
+select,
+textarea {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 2px solid rgba(45, 106, 79, 0.15);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-family: var(--font-primary);
+    background: rgba(255, 255, 255, 0.9);
+    transition: var(--transition-smooth);
+    color: var(--text-primary);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 4px rgba(82, 183, 136, 0.15);
+    background: white;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Checkbox personalizado */
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition-smooth);
+    display: inline-block;
+    vertical-align: middle;
+    background: white;
+}
+
+input[type="checkbox"]:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+/* ===== 7. TABLAS ===== */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+}
+
+thead {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--text-light);
+}
+
+th {
+    padding: var(--space-md) var(--space-lg);
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+td {
+    padding: var(--space-sm) var(--space-lg);
+    border-bottom: 1px solid rgba(45, 106, 79, 0.08);
+}
+
+tbody tr {
+    transition: var(--transition-smooth);
+}
+
+tbody tr:hover {
+    background: rgba(82, 183, 136, 0.08);
+    transform: scale(1.01);
+}
+
+/* ===== 8. CARDS ===== */
+article, 
+.card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: var(--transition-organic);
+    position: relative;
+    overflow: hidden;
+}
+
+article:hover,
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+
+/* Decoración "hoja" en cards */
+article::before,
+.card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(82, 183, 136, 0.05), transparent 70%);
+    transition: var(--transition-smooth);
+    pointer-events: none;
+}
+
+article:hover::before,
+.card:hover::before {
+    transform: scale(1.5);
+}
+
+/* ===== 9. NAVEGACIÓN ===== */
+nav {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    padding: var(--space-sm) var(--space-lg);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    position: relative;
+}
+
+nav a {
+    display: block;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    transition: var(--transition-smooth);
+}
+
+nav a:hover {
+    background: rgba(82, 183, 136, 0.1);
+}
+
+/* ===== 10. HEADER ===== */
+header {
+    padding: var(--space-lg);
+    text-align: center;
+    position: relative;
+}
+
+header::after {
+    content: '🌿';
+    font-size: 3rem;
+    opacity: 0.1;
+    position: absolute;
+    right: var(--space-lg);
+    bottom: var(--space-sm);
+    animation: float 4s ease-in-out infinite;
+}
+
+/* ===== 11. FOOTER ===== */
+footer {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    text-align: center;
+    border-top: 2px solid rgba(45, 106, 79, 0.08);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* ===== 12. RESPONSIVE ===== */
+@media (max-width: 768px) {
+    body {
+        padding: var(--space-md);
+    }
+    
+    nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    nav ul {
+        justify-content: center;
+    }
+    
+    form {
+        padding: var(--space-md);
+    }
+    
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --space-lg: 1.5rem;
+        --space-xl: 2.5rem;
+    }
+    
+    body {
+        padding: var(--space-sm);
+    }
+    
+    button, 
+    input[type="submit"] {
+        width: 100%;
+        padding: var(--space-md);
+    }
+}
+
+/* ===== 13. ANIMACIONES ===== */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes growIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ===== 14. UTILIDADES ===== */
+/* Badges de estado ecológico */
+.eco-badge {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-lg);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition-smooth);
+}
+
+.eco-badge.healthy {
+    background: #d5f5e3;
+    color: #1a6e3a;
+    border: 1px solid rgba(45, 106, 79, 0.2);
+}
+
+.eco-badge.warning {
+    background: #fdebd0;
+    color: #8b6914;
+    border: 1px solid rgba(212, 163, 115, 0.2);
+}
+
+.eco-badge.danger {
+    background: #fadbd8;
+    color: #943126;
+    border: 1px solid rgba(181, 59, 59, 0.2);
+}
+
+.eco-badge.critical {
+    background: #e6b0aa;
+    color: #641e16;
+    border: 1px solid rgba(122, 26, 26, 0.2);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===== 15. ESTADOS DINÁMICOS DE SIMULACIÓN ===== */
+/* Estos estados se activan vía JavaScript */
+
+/* Ecosistema saludable */
+body[data-ecosystem-state="healthy"] {
+    background: linear-gradient(170deg, #e8f5e9, #c8e6c9, #a5d6a7);
+}
+
+body[data-ecosystem-state="healthy"] header::after {
+    content: '🌳';
+    opacity: 0.2;
+}
+
+body[data-ecosystem-state="healthy"] h1 {
+    background: linear-gradient(135deg, #1b5e20, #43a047);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Ecosistema en equilibrio */
+body[data-ecosystem-state="balanced"] {
+    background: linear-gradient(170deg, #e0f2f1, #b2dfdb, #80cbc4);
+}
+
+body[data-ecosystem-state="balanced"] header::after {
+    content: '🌿';
+    opacity: 0.2;
+}
+
+/* Ecosistema vulnerable */
+body[data-ecosystem-state="vulnerable"] {
+    background: linear-gradient(170deg, #fff3e0, #ffe0b2, #ffcc80);
+}
+
+body[data-ecosystem-state="vulnerable"] header::after {
+    content: '⚠️';
+    opacity: 0.3;
+}
+
+body[data-ecosystem-state="vulnerable"] h1 {
+    background: linear-gradient(135deg, #e65100, #f57c00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Ecosistema en peligro */
+body[data-ecosystem-state="danger"] {
+    background: linear-gradient(170deg, #fbe9e7, #ffccbc, #ffab91);
+}
+
+body[data-ecosystem-state="danger"] header::after {
+    content: '🔥';
+    opacity: 0.3;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+body[data-ecosystem-state="danger"] h1 {
+    background: linear-gradient(135deg, #bf360c, #d84315);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Ecosistema crítico */
+body[data-ecosystem-state="critical"] {
+    background: linear-gradient(170deg, #fce4ec, #f8bbd0, #f48fb1);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+body[data-ecosystem-state="critical"] header::after {
+    content: '🚨';
+    opacity: 0.5;
+    animation: pulse 0.5s ease-in-out infinite;
+}
+
+body[data-ecosystem-state="critical"] h1 {
+    background: linear-gradient(135deg, #880e4f, #ad1457);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== 16. SCROLLBAR ORGÁNICA ===== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(45, 106, 79, 0.05);
+    border-radius: var(--radius-lg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: var(--radius-lg);
+    transition: var(--transition-smooth);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary-light));
+}
+
+/* ===== 17. LOADING ANIMATION ===== */
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(45, 106, 79, 0.1);
+    border-top: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== 18. TOOLTIPS ===== */
+[title] {
+    position: relative;
+}
+
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 46, 31, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    box-shadow: var(--shadow-soft);
+    z-index: 1000;
+}
+
+/* ===== 19. MODAL ===== */
+dialog {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-strong);
+    max-width: 600px;
+    width: 90%;
+    animation: growIn 0.3s ease;
+}
+
+dialog::backdrop {
+    background: rgba(26, 46, 31, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ===== 20. NOTIFICACIONES ===== */
+.notification {
+    position: fixed;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    max-width: 400px;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-medium);
+    border-left: 4px solid var(--color-primary);
+    animation: fadeInUp 0.5s ease;
+    z-index: 9999;
+}
+
+.notification.success {
+    border-left-color: var(--color-secondary);
+}
+
+.notification.warning {
+    border-left-color: var(--color-earth);
+}
+
+.notification.error {
+    border-left-color: var(--color-danger);
+}
+
+/* ===== 21. RESPONSIVE FINO ===== */
+@media (max-width: 1024px) {
+    :root {
+        --space-xl: 3rem;
+    }
+}
+
+@media print {
+    body {
+        background: white !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+}

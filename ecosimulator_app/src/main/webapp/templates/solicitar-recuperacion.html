@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Recuperar Contraseña</title>
+    <link rel="stylesheet" href="/ecosimulator/css/styles.css">
+</head>
+<body>
+    <div style="max-width: 400px; margin: 50px auto;">
+        <header>
+            <h1>🔐 Recuperar Contraseña</h1>
+        </header>
+        
+        <form action="/ecosimulator/recuperar-password" method="POST" style="margin-top: var(--space-lg);">
+            <input type="hidden" name="action" value="solicitar">
+            
+            {{#mensaje}}
+            <div style="background: #d5f5e3; color: #27ae60; padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+                ✅ {{mensaje}}
+            </div>
+            {{/mensaje}}
+            
+            {{#enlace}}
+            <div style="background: #ebf5fb; color: #3498db; padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-md); word-break: break-all;">
+                <strong>Enlace de recuperación:</strong><br>
+                <a href="{{enlace}}" target="_blank">{{enlace}}</a>
+            </div>
+            {{/enlace}}
+            
+            {{#error}}
+            <div style="background: #fee; color: #c0392b; padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+                ⚠️ {{error}}
+            </div>
+            {{/error}}
+            
+            <div class="form-group">
+                <label for="email">📧 Email</label>
+                <input type="email" id="email" name="email" 
+                       placeholder="Introduce tu email" required>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%;">
+                📧 Enviar enlace de recuperación
+            </button>
+            
+            <div style="text-align: center; margin-top: var(--space-md);">
+                <a href="/ecosimulator/login">↩️ Volver al Login</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

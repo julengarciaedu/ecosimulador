@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Editar Especie</title>
+    <link rel="stylesheet" href="../css/ecostyles.css">
+    <style>
+        .edit-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+        
+        .form-full {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-md);
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--color-forest-dark);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: var(--space-sm) var(--space-md);
+            border: 2px solid rgba(45, 106, 79, 0.15);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+            font-family: var(--font-primary);
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--color-secondary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(82, 183, 136, 0.15);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-xs) 0;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 1.5rem;
+            height: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+        
+        .btn-group button {
+            flex: 1;
+            padding: var(--space-md);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-secondary {
+            background: var(--color-earth-light);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--color-earth);
+        }
+        
+        .info-box {
+            background: rgba(82, 183, 136, 0.1);
+            border-left: 4px solid var(--color-secondary);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            margin: var(--space-md) 0;
+        }
+        
+        .info-box h4 {
+            color: var(--color-primary);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .info-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>✏️ Editar Especie</h1>
+        <p style="color: var(--text-secondary);">Modifica los datos de la especie</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/ecosimulator/admin/dashboard">⚙️ Administración</a></li>
+            <li><a href="/ecosimulator/admin/especies">🌱 Especies</a></li>
+            <li><a href="/ecosimulator/admin/especie/editar/{{especie.id}}" style="font-weight: 700; color: var(--color-primary);">✏️ Editar</a></li>
+        </ul>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <span style="color: var(--text-secondary);">👤 {{username}}</span>
+            <a href="/ecosimulator/logout" style="color: var(--text-secondary);">🚪 Salir</a>
+        </div>
+    </nav>
+    
+    <main style="margin-top: var(--space-lg);">
+        <div class="edit-container">
+            <div class="card">
+                <form action="/ecosimulator/admin/especie/actualizar" method="POST">
+                    <input type="hidden" name="id" value="{{especie.id}}">
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nombreCientifico">🔬 Nombre Científico</label>
+                            <input type="text" id="nombreCientifico" name="nombreCientifico" 
+                                   value="{{especie.nombreCientifico}}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nombreComun">🌿 Nombre Común</label>
+                            <input type="text" id="nombreComun" name="nombreComun" 
+                                   value="{{especie.nombreComun}}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reino">👑 Reino</label>
+                            <select id="reino" name="reino">
+                                <option value="Animalia" {{#especie.reino}}selected{{/especie.reino}}>Animalia</option>
+                                <option value="Plantae" {{#especie.reino}}selected{{/especie.reino}}>Plantae</option>
+                                <option value="Fungi" {{#especie.reino}}selected{{/especie.reino}}>Fungi</option>
+                                <option value="Protista" {{#especie.reino}}selected{{/especie.reino}}>Protista</option>
+                                <option value="Monera" {{#especie.reino}}selected{{/especie.reino}}>Monera</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="familia">🏷️ Familia</label>
+                            <input type="text" id="familia" name="familia" 
+                                   value="{{especie.familia}}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dieta">🍽️ Dieta</label>
+                            <select id="dieta" name="dieta">
+                                <option value="carnivoro" {{#especie.dieta}}selected{{/especie.dieta}}>Carnívoro</option>
+                                <option value="herbivoro" {{#especie.dieta}}selected{{/especie.dieta}}>Herbívoro</option>
+                                <option value="omnivoro" {{#especie.dieta}}selected{{/especie.dieta}}>Omnívoro</option>
+                                <option value="insectivoro" {{#especie.dieta}}selected{{/especie.dieta}}>Insectívoro</option>
+                                <option value="autotrofo" {{#especie.dieta}}selected{{/especie.dieta}}>Autótrofo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="estadoConservacion">🛡️ Estado de Conservación</label>
+                            <select id="estadoConservacion" name="estadoConservacion">
+                                <option value="EX" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>EX - Extinto</option>
+                                <option value="EW" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>EW - Extinto en Estado Silvestre</option>
+                                <option value="CR" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>CR - Críticamente Amenazado</option>
+                                <option value="EN" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>EN - En Peligro</option>
+                                <option value="VU" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>VU - Vulnerable</option>
+                                <option value="NT" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>NT - Casi Amenazado</option>
+                                <option value="LC" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>LC - Preocupación Menor</option>
+                                <option value="DD" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>DD - Datos Insuficientes</option>
+                                <option value="NE" {{#especie.estadoConservacion}}selected{{/especie.estadoConservacion}}>NE - No Evaluado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="habitatPreferido">🏞️ Hábitat Preferido</label>
+                            <input type="text" id="habitatPreferido" name="habitatPreferido" 
+                                   value="{{especie.habitatPreferido}}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="longevidadPromedio">⏳ Longevidad Promedio (años)</label>
+                            <input type="number" id="longevidadPromedio" name="longevidadPromedio" 
+                                   value="{{especie.longevidadPromedio}}" step="1" min="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tamanoPromedio">📏 Tamaño Promedio (cm)</label>
+                            <input type="number" id="tamanoPromedio" name="tamanoPromedio" 
+                                   value="{{especie.tamanoPromedio}}" step="0.01" min="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="impactoEcologico">🌍 Impacto Ecológico (0-1)</label>
+                            <input type="number" id="impactoEcologico" name="impactoEcologico" 
+                                   value="{{especie.impactoEcologico}}" step="0.01" min="0" max="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tasaReproduccion">🐣 Tasa de Reproducción</label>
+                            <input type="number" id="tasaReproduccion" name="tasaReproduccion" 
+                                   value="{{especie.tasaReproduccion}}" step="0.01" min="0">
+                        </div>
+                        
+                        <div class="form-full">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md);">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="esEndemica" name="esEndemica" 
+                                           {{#especie.esEndemica}}checked{{/especie.esEndemica}}>
+                                    <label for="esEndemica" style="margin: 0;">🌿 Endémica</label>
+                                </div>
+                                
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="esInvasora" name="esInvasora" 
+                                           {{#especie.esInvasora}}checked{{/especie.esInvasora}}>
+                                    <label for="esInvasora" style="margin: 0;">🚫 Invasora</label>
+                                </div>
+                                
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="esProtegida" name="esProtegida" 
+                                           {{#especie.esProtegida}}checked{{/especie.esProtegida}}>
+                                    <label for="esProtegida" style="margin: 0;">🛡️ Protegida</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-full">
+                            <div class="form-group">
+                                <label for="descripcion">📝 Descripción</label>
+                                <textarea id="descripcion" name="descripcion" rows="3">{{especie.descripcion}}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-full">
+                            <div class="form-group">
+                                <label for="caracteristicas">✨ Características</label>
+                                <textarea id="caracteristicas" name="caracteristicas" rows="3">{{especie.caracteristicas}}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-full">
+                            <div class="form-group">
+                                <label for="imagenUrl">🖼️ URL de la Imagen</label>
+                                <input type="text" id="imagenUrl" name="imagenUrl" 
+                                       value="{{especie.imagenUrl}}" placeholder="https://ejemplo.com/imagen.jpg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4>💡 Información de la Especie</h4>
+                        <p>
+                            📅 Creada: {{especie.creadoEn}}<br>
+                            🔄 Última actualización: {{especie.actualizadoEn}}
+                        </p>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
+                        <a href="/ecosimulator/admin/especies" class="btn-secondary" 
+                           style="text-align: center; text-decoration: none; padding: var(--space-md); border-radius: var(--radius-lg);">
+                            ↩️ Cancelar
+                        </a>
+                    </div>
+                </form>
+                
+                <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid rgba(45, 106, 79, 0.1);">
+                    <form action="/ecosimulator/admin/especie/eliminar" method="POST" 
+                          onsubmit="return confirm('⚠️ ¿Estás seguro de que quieres eliminar esta especie? Esta acción no se puede deshacer.');">
+                        <input type="hidden" name="id" value="{{especie.id}}">
+                        <button type="submit" class="btn-danger" style="width: 100%;">🗑️ Eliminar Especie</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>🌿 EcoSimulator v1.0 - Editar Especie</p>
+    </footer>
+</body>
+</html>

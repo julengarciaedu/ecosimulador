@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Gestión de Especies</title>
+    <link rel="stylesheet" href="../css/ecostyles.css">
+    <style>
+        .species-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+        
+        .species-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition-smooth);
+        }
+        
+        .species-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+        
+        .species-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--space-sm);
+        }
+        
+        .species-card .header h4 {
+            margin: 0;
+            color: var(--color-primary);
+        }
+        
+        .species-card .cientifico {
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .species-card .details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: var(--space-sm) 0;
+        }
+        
+        .species-card .details span {
+            display: inline-block;
+            margin-right: var(--space-md);
+        }
+        
+        .species-card .actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+            padding-top: var(--space-sm);
+            border-top: 1px solid rgba(45, 106, 79, 0.1);
+        }
+        
+        .conservation-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .conservation-badge.CR { background: #e74c3c; color: white; }
+        .conservation-badge.EN { background: #e67e22; color: white; }
+        .conservation-badge.VU { background: #f39c12; color: white; }
+        .conservation-badge.NT { background: #f1c40f; color: #2c3e50; }
+        .conservation-badge.LC { background: #27ae60; color: white; }
+        .conservation-badge.DD { background: #95a5a6; color: white; }
+        .conservation-badge.NE { background: #bdc3c7; color: #2c3e50; }
+        
+        .diet-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌱 Gestión de Especies</h1>
+        <p style="color: var(--text-secondary);">Administra la biodiversidad del ecosistema</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/ecosimulator/dashboard">📊 Dashboard</a></li>
+            <li><a href="/ecosimulator/admin">⚙️ Administración</a></li>
+            <li><a href="/ecosimulator/admin/especies" style="font-weight: 700; color: var(--color-primary);">🌱 Especies</a></li>
+        </ul>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <span style="color: var(--text-secondary);">👤 {{username}} (Admin)</span>
+            <a href="/ecosimulator/logout" style="color: var(--text-secondary);">🚪 Salir</a>
+        </div>
+    </nav>
+    
+    <main style="margin-top: var(--space-lg);">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <!-- Barra de acciones -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-md);">
+                <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
+                    <input type="text" id="searchSpecies" placeholder="🔍 Buscar especie..." 
+                           style="width: 200px;" onkeyup="filtrarEspecies()">
+                    <select id="filterConservation" onchange="filtrarEspecies()">
+                        <option value="">Todos los estados</option>
+                        <option value="CR">CR - Crítico</option>
+                        <option value="EN">EN - En Peligro</option>
+                        <option value="VU">VU - Vulnerable</option>
+                        <option value="NT">NT - Casi Amenazada</option>
+                        <option value="LC">LC - Preocupación Menor</option>
+                    </select>
+                    <select id="filterDiet" onchange="filtrarEspecies()">
+                        <option value="">Todas las dietas</option>
+                        <option value="carnivoro">Carnívoro</option>
+                        <option value="herbivoro">Herbívoro</option>
+                        <option value="omnivoro">Omnívoro</option>
+                        <option value="autotrofo">Autótrofo</option>
+                    </select>
+                </div>
+                <a href="/ecosimulator/admin/especie/nueva" class="btn-primary">
+                    ➕ Nueva Especie
+                </a>
+            </div>
+            
+            <!-- Grid de especies -->
+            <div class="species-grid" id="speciesGrid">
+                {{#especies}}
+                <div class="species-card" 
+                     data-nombre="{{nombreComun}}" 
+                     data-estado="{{estadoConservacion}}"
+                     data-dieta="{{dieta}}">
+                    <div class="header">
+                        <div>
+                            <h4>{{nombreComun}}</h4>
+                            <div class="cientifico">{{nombreCientifico}}</div>
+                        </div>
+                        <span class="conservation-badge {{estadoConservacion}}">
+                            {{estadoConservacion}}
+                        </span>
+                    </div>
+                    
+                    <div class="details">
+                        <span>🏷️ {{familia}}</span>
+                        <span>🌍 {{reino}}</span>
+                        <span class="diet-badge">{{dieta}}</span>
+                    </div>
+                    
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin: var(--space-sm) 0;">
+                        {{#esEndemica}}🌿 Endémica {{/esEndemica}}
+                        {{#esProtegida}}🛡️ Protegida {{/esProtegida}}
+                        {{#esInvasora}}🚫 Invasora {{/esInvasora}}
+                    </div>
+                    
+                    <div style="font-size: 0.85rem;">
+                        <span>Impacto: {{impactoEcologico}}</span>
+                        <span style="margin-left: var(--space-md);">Reproducción: {{tasaReproduccion}}</span>
+                    </div>
+                    
+                    <div class="actions">
+                        <a href="/ecosimulator/admin/especie/editar/{{id}}" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; padding: var(--space-xs);">
+                            ✏️ Editar
+                        </a>
+                        <a href="#" onclick="eliminarEspecie({{id}})" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; padding: var(--space-xs); background: #fadbd8; color: #e74c3c;">
+                            🗑️
+                        </a>
+                    </div>
+                </div>
+                {{/especies}}
+                {{^especies}}
+                <p style="grid-column: 1 / -1; text-align: center; padding: var(--space-xl); color: var(--text-secondary);">
+                    No hay especies registradas
+                </p>
+                {{/especies}}
+            </div>
+            
+            <!-- Estadísticas rápidas -->
+            <div style="margin-top: var(--space-lg); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md);">
+                <div class="stat-box">
+                    <div class="number">{{totalEspecies}}</div>
+                    <div class="label">Total Especies</div>
+                </div>
+                <div class="stat-box" style="border-left: 4px solid #e74c3c;">
+                    <div class="number" style="color: #e74c3c;">{{especiesAmenazadas}}</div>
+                    <div class="label">Especies Amenazadas</div>
+                </div>
+                <div class="stat-box" style="border-left: 4px solid #27ae60;">
+                    <div class="number" style="color: #27ae60;">{{especiesProtegidas}}</div>
+                    <div class="label">Especies Protegidas</div>
+                </div>
+                <div class="stat-box" style="border-left: 4px solid #f39c12;">
+                    <div class="number" style="color: #f39c12;">{{especiesEndemicas}}</div>
+                    <div class="label">Especies Endémicas</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>🌿 EcoSimulator v1.0 - Gestión de Especies</p>
+    </footer>
+    
+    <script>
+        function filtrarEspecies() {
+            const search = document.getElementById('searchSpecies').value.toLowerCase();
+            const estado = document.getElementById('filterConservation').value;
+            const dieta = document.getElementById('filterDiet').value;
+            
+            const cards = document.querySelectorAll('.species-card');
+            
+            cards.forEach(card => {
+                const nombre = card.dataset.nombre?.toLowerCase() || '';
+                const cardEstado = card.dataset.estado || '';
+                const cardDieta = card.dataset.dieta || '';
+                
+                let visible = true;
+                
+                if (search && !nombre.includes(search)) {
+                    visible = false;
+                }
+                
+                if (estado && cardEstado !== estado) {
+                    visible = false;
+                }
+                
+                if (dieta && cardDieta !== dieta) {
+                    visible = false;
+                }
+                
+                card.style.display = visible ? '' : 'none';
+            });
+        }
+        
+        function eliminarEspecie(id) {
+            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar esta especie?')) {
+                fetch('/ecosimulator/admin/especie/eliminar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'id=' + id
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('❌ Error al eliminar la especie');
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Error: ' + error.message);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 EcoSimulator - Gestión de Hábitats</title>
+    <link rel="stylesheet" href="../css/ecostyles.css">
+    <style>
+        .habitat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+        
+        .habitat-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .habitat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+        
+        .habitat-card .biome-icon {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-sm);
+        }
+        
+        .habitat-card h4 {
+            color: var(--color-primary);
+            margin: 0 0 var(--space-xs) 0;
+        }
+        
+        .habitat-card .location {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .habitat-card .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+            margin: var(--space-sm) 0;
+            padding: var(--space-sm);
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-sm);
+        }
+        
+        .habitat-card .stats .stat-item {
+            text-align: center;
+        }
+        
+        .habitat-card .stats .stat-item .value {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        
+        .habitat-card .stats .stat-item .label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        .habitat-card .protection {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: var(--space-xs);
+        }
+        
+        .protection.parque_nacional { background: #2ecc71; color: white; }
+        .protection.unesco { background: #3498db; color: white; }
+        .protection.reserva { background: #27ae60; color: white; }
+        .protection.total { background: #1abc9c; color: white; }
+        .protection.parcial { background: #f39c12; color: white; }
+        .protection.sin_proteccion { background: #95a5a6; color: white; }
+        
+        .habitat-card .actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+            padding-top: var(--space-sm);
+            border-top: 1px solid rgba(45, 106, 79, 0.1);
+        }
+        
+        .biodiversity-bar {
+            width: 100%;
+            height: 4px;
+            background: #ecf0f1;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: var(--space-xs);
+        }
+        
+        .biodiversity-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary-light), var(--color-secondary));
+            border-radius: 2px;
+            transition: width 1s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏞️ Gestión de Hábitats</h1>
+        <p style="color: var(--text-secondary);">Administra los ecosistemas del sistema</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/ecosimulator/dashboard">📊 Dashboard</a></li>
+            <li><a href="/ecosimulator/admin">⚙️ Administración</a></li>
+            <li><a href="/ecosimulator/admin/habitats" style="font-weight: 700; color: var(--color-primary);">🏞️ Hábitats</a></li>
+        </ul>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <span style="color: var(--text-secondary);">👤 {{username}} (Admin)</span>
+            <a href="/ecosimulator/logout" style="color: var(--text-secondary);">🚪 Salir</a>
+        </div>
+    </nav>
+    
+    <main style="margin-top: var(--space-lg);">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <!-- Barra de acciones -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-md);">
+                <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
+                    <input type="text" id="searchHabitat" placeholder="🔍 Buscar hábitat..." 
+                           style="width: 200px;" onkeyup="filtrarHabitats()">
+                    <select id="filterBiome" onchange="filtrarHabitats()">
+                        <option value="">Todos los biomas</option>
+                        <option value="bosque_tropical">Bosque Tropical</option>
+                        <option value="bosque_templado">Bosque Templado</option>
+                        <option value="humedal">Humedal</option>
+                        <option value="desierto_calido">Desierto Cálido</option>
+                        <option value="tundra_artica">Tundra Ártica</option>
+                    </select>
+                    <select id="filterProtection" onchange="filtrarHabitats()">
+                        <option value="">Todos los estatus</option>
+                        <option value="parque_nacional">Parque Nacional</option>
+                        <option value="unesco">UNESCO</option>
+                        <option value="reserva">Reserva</option>
+                        <option value="sin_proteccion">Sin Protección</option>
+                    </select>
+                </div>
+                <a href="/ecosimulator/admin/habitat/nuevo" class="btn-primary">
+                    ➕ Nuevo Hábitat
+                </a>
+            </div>
+            
+            <!-- Grid de hábitats -->
+            <div class="habitat-grid" id="habitatGrid">
+                {{#habitats}}
+                <div class="habitat-card" 
+                     data-nombre="{{nombre}}" 
+                     data-bioma="{{tipoBioma}}"
+                     data-proteccion="{{estatusProteccion}}">
+                    <div class="biome-icon">
+                        {{#tipoBioma}}
+                            {{#equals tipoBioma 'bosque_tropical'}}🌴{{/equals}}
+                            {{#equals tipoBioma 'bosque_templado'}}🌳{{/equals}}
+                            {{#equals tipoBioma 'humedal'}}🌊{{/equals}}
+                            {{#equals tipoBioma 'desierto_calido'}}🏜️{{/equals}}
+                            {{#equals tipoBioma 'tundra_artica'}}❄️{{/equals}}
+                            {{#equals tipoBioma 'sabana'}}🦒{{/equals}}
+                            {{#equals tipoBioma 'manglar'}}🌿{{/equals}}
+                            {{^}}🏞️{{/}}
+                        {{/tipoBioma}}
+                    </div>
+                    
+                    <h4>{{nombre}}</h4>
+                    <div class="location">📍 {{pais}} - {{region}}</div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="value">{{biodiversidadIndex}}</div>
+                            <div class="label">Biodiversidad</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="value">{{temperaturaPromedio}}°C</div>
+                            <div class="label">Temp. Promedio</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="value">{{areaTotal}} km²</div>
+                            <div class="label">Área Total</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="value">{{altitudMin}}-{{altitudMax}} m</div>
+                            <div class="label">Altitud</div>
+                        </div>
+                    </div>
+                    
+                    <div class="biodiversity-bar">
+                        <div class="fill" style="width: {{biodiversidadPorcentaje}}%;"></div>
+                    </div>
+                    
+                    <div style="margin-top: var(--space-xs);">
+                        <span class="protection {{estatusProteccion}}">
+                            {{estatusProteccion}}
+                        </span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: var(--space-sm);">
+                            {{descripcion}}
+                        </span>
+                    </div>
+                    
+                    <div class="actions">
+                        <a href="/ecosimulator/admin/habitat/editar/{{id}}" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; padding: var(--space-xs);">
+                            ✏️ Editar
+                        </a>
+                        <a href="#" onclick="eliminarHabitat({{id}})" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; padding: var(--space-xs); background: #fadbd8; color: #e74c3c;">
+                            🗑️
+                        </a>
+                    </div>
+                </div>
+                {{/habitats}}
+                {{^habitats}}
+                <p style="grid-column: 1 / -1; text-align: center; padding: var(--space-xl); color: var(--text-secondary);">
+                    No hay hábitats registrados
+                </p>
+                {{/habitats}}
+            </div>
+            
+            <!-- Estadísticas de hábitats -->
+            <div style="margin-top: var(--space-lg); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+                <div class="stat-box">
+                    <div class="number">{{totalHabitats}}</div>
+                    <div class="label">Total Hábitats</div>
+                </div>
+                <div class="stat-box" style="border-left: 4px solid #2ecc71;">
+                    <div class="number" style="color: #2ecc71;">{{habitantsProtegidos}}</div>
+                    <div class="label">Hábitats Protegidos</div>
+                </div>
+                <div class="stat-box" style="border-left: 4px solid #3498db;">
+                    <div class="number" style="color: #3498db;">{{habitantsAltaBiodiversidad}}</div>
+                    <div class="label">Alta Biodiversidad</div>
+                </div>
+                <div class="stat-box" style="border-left: 4px solid #e67e22;">
+                    <div class="number" style="color: #e67e22;">{{promedioBiodiversidad}}%</div>
+                    <div class="label">Biodiversidad Promedio</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>🌿 EcoSimulator v1.0 - Gestión de Hábitats</p>
+    </footer>
+    
+    <script>
+        function filtrarHabitats() {
+            const search = document.getElementById('searchHabitat').value.toLowerCase();
+            const bioma = document.getElementById('filterBiome').value;
+            const proteccion = document.getElementById('filterProtection').value;
+            
+            const cards = document.querySelectorAll('.habitat-card');
+            
+            cards.forEach(card => {
+                const nombre = card.dataset.nombre?.toLowerCase() || '';
+                const cardBioma = card.dataset.bioma || '';
+                const cardProteccion = card.dataset.proteccion || '';
+                
+                let visible = true;
+                
+                if (search && !nombre.includes(search)) {
+                    visible = false;
+                }
+                
+                if (bioma && cardBioma !== bioma) {
+                    visible = false;
+                }
+                
+                if (proteccion && cardProteccion !== proteccion) {
+                    visible = false;
+                }
+                
+                card.style.display = visible ? '' : 'none';
+            });
+        }
+        
+        function eliminarHabitat(id) {
+            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar este hábitat? Se eliminarán todas las simulaciones asociadas.')) {
+                fetch('/ecosimulator/admin/habitat/eliminar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'id=' + id
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('❌ Error al eliminar el hábitat');
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Error: ' + error.message);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
