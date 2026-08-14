@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -74,6 +75,11 @@ public class SimulacionServlet extends HttpServlet {
             } else if (path.equals("/publicas")) {
                 // Listar simulaciones públicas
                 listarPublicas(request, response);
+                return;
+
+            } else if (path.startsWith("/exportar/")) {
+                // Descargar los resultados de una simulación en JSON
+                exportarSimulacion(request, response);
                 return;
             }
             
@@ -336,9 +342,71 @@ public class SimulacionServlet extends HttpServlet {
                 
         } catch (Exception e) {
             e.printStackTrace();
-            RenderVista.renderizarVista(response, 
-                getServletContext().getRealPath("templates/error.html"), 
+            RenderVista.renderizarVista(response,
+                getServletContext().getRealPath("templates/error.html"),
                 Map.of("error", "Error al cargar simulaciones públicas: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Descarga los resultados de una simulación como fichero JSON
+     */
+    private void exportarSimulacion(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String[] parts = request.getPathInfo().split("/");
+        int id = Integer.parseInt(parts[parts.length - 1]);
+
+        try {
+            Simulacion simulacion = simulacionDAO.findById(id);
+            if (simulacion == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            Integer usuarioId = (Integer) request.getSession().getAttribute("usuarioId");
+            String rol = (String) request.getSession().getAttribute("rol");
+
+            if (!simulacion.isEsPublica() && simulacion.getUsuarioId() != usuarioId && !"admin".equals(rol)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            Map<String, Object> exportacion = new LinkedHashMap<>();
+            exportacion.put("id", simulacion.getId());
+            exportacion.put("nombre", simulacion.getNombre());
+            exportacion.put("descripcion", simulacion.getDescripcion());
+            exportacion.put("estado", simulacion.getEstado());
+            exportacion.put("duracionSimuladaAnios", simulacion.getDuracionSimulada());
+            exportacion.put("puntuacionSostenibilidad", simulacion.getPuntuacionSostenibilidad());
+            exportacion.put("puntuacionBiodiversidad", simulacion.getPuntuacionBiodiversidad());
+            exportacion.put("riesgoEstimado", simulacion.getRiesgoEstimado());
+            exportacion.put("fechaInicio", simulacion.getFechaInicio());
+            exportacion.put("fechaFin", simulacion.getFechaFin());
+            exportacion.put("modeloIa", simulacion.getModeloIa());
+            exportacion.put("respuestaIa", simulacion.getRespuestaIa());
+
+            if (simulacion.getResultadosGenerales() != null) {
+                exportacion.put("resultados", objectMapper.readValue(simulacion.getResultadosGenerales(), Map.class));
+            }
+            if (simulacion.getMetricasCalculadas() != null) {
+                exportacion.put("metricas", objectMapper.readValue(simulacion.getMetricasCalculadas(), Map.class));
+            }
+
+            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportacion);
+            byte[] contenido = json.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+            response.setContentType("application/json;charset=UTF-8");
+            response.setHeader("Content-Disposition",
+                "attachment; filename=\"simulacion-" + simulacion.getId() + ".json\"");
+            response.setContentLength(contenido.length);
+            response.getOutputStream().write(contenido);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            RenderVista.renderizarVista(response,
+                getServletContext().getRealPath("templates/error.html"),
+                Map.of("error", "Error al exportar la simulación: " + e.getMessage()));
         }
     }
     
