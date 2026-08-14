@@ -9,6 +9,8 @@ import maricomputa.ecosimulator.modelo.entidad.Simulacion;
 import maricomputa.ecosimulator.modelo.entidad.Especie;
 import maricomputa.ecosimulator.mustache.RenderVista;
 import maricomputa.ecosimulator.utils.SimulacionEngine;
+import maricomputa.ecosimulator.controler.service.AnalisisIAFactory;
+import maricomputa.ecosimulator.controler.service.AnalisisIAService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -116,6 +118,8 @@ public class SimulacionServlet extends HttpServlet {
                 eliminarSimulacion(request, response);
             } else if (path.equals("/compartir")) {
                 compartirSimulacion(request, response);
+            } else if (path.equals("/analizar")) {
+                analizarConIA(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -547,11 +551,78 @@ public class SimulacionServlet extends HttpServlet {
         
         simulacion.setEsPublica(esPublica);
         simulacionDAO.update(simulacion);
-        
+
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("Estado de compartir actualizado");
     }
-    
+
+    /**
+     * Genera (o regenera) el análisis de IA de una simulación completada,
+     * con el proveedor elegido por el usuario (DeepSeek o Claude).
+     */
+    private void analizarConIA(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+
+        int id = Integer.parseInt(request.getParameter("id"));
+        String modelo = request.getParameter("modelo");
+
+        Simulacion simulacion = simulacionDAO.findById(id);
+        if (simulacion == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        if (!simulacion.isCompletada()) {
+            responderJson(response, HttpServletResponse.SC_BAD_REQUEST,
+                Map.of("error", "Solo se pueden analizar simulaciones completadas"));
+            return;
+        }
+
+        try {
+            AnalisisIAService servicio = AnalisisIAFactory.obtener(modelo);
+            String prompt = construirPromptAnalisis(simulacion);
+            String respuesta = servicio.analizar(prompt);
+
+            simulacion.setPromptIa(prompt);
+            simulacion.setRespuestaIa(respuesta);
+            simulacion.setModeloIa(servicio.getNombreModelo());
+            simulacionDAO.update(simulacion);
+
+            responderJson(response, HttpServletResponse.SC_OK,
+                Map.of("respuesta", respuesta, "modelo", servicio.getNombreModelo()));
+
+        } catch (IllegalStateException e) {
+            // Clave de API no configurada, o error devuelto por el proveedor
+            responderJson(response, HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                Map.of("error", e.getMessage()));
+        }
+    }
+
+    private String construirPromptAnalisis(Simulacion simulacion) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Analiza los siguientes resultados de una simulación de ecosistema ")
+              .append("y ofrece un análisis claro para un público no especializado, ")
+              .append("con recomendaciones concretas de conservación.\n\n");
+        prompt.append("Nombre: ").append(simulacion.getNombre()).append("\n");
+        prompt.append("Duración simulada: ").append(simulacion.getDuracionSimulada()).append(" años\n");
+        prompt.append("Puntuación de sostenibilidad: ").append(simulacion.getPuntuacionSostenibilidad()).append("/100\n");
+        prompt.append("Puntuación de biodiversidad: ").append(simulacion.getPuntuacionBiodiversidad()).append("/100\n");
+        prompt.append("Riesgo estimado: ").append(simulacion.getRiesgoIcono()).append("\n");
+        if (simulacion.getMetricasCalculadas() != null) {
+            prompt.append("Métricas calculadas: ").append(simulacion.getMetricasCalculadas()).append("\n");
+        }
+        prompt.append("\nEstructura la respuesta en: 1) resumen del estado del ecosistema, ")
+              .append("2) riesgos identificados, 3) recomendaciones prácticas.");
+        return prompt.toString();
+    }
+
+    private void responderJson(HttpServletResponse response, int status, Map<String, Object> cuerpo)
+            throws Exception {
+        response.setStatus(status);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(cuerpo));
+    }
+
     /**
      * Prepara el contexto para Mustache
      */

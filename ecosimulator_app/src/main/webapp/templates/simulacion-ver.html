@@ -276,17 +276,35 @@
                 </div>
                 
                 <!-- Análisis IA -->
-                {{#simulacion.respuestaIa}}
                 <div class="result-card" style="border-left: 4px solid var(--color-secondary);">
                     <h3>🤖 Análisis con IA</h3>
+
+                    {{#simulacion.respuestaIa}}
                     <div style="white-space: pre-wrap; font-family: var(--font-primary); line-height: 1.8; color: var(--text-primary);">
                         {{simulacion.respuestaIa}}
                     </div>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: var(--space-md);">
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: var(--space-sm) 0 var(--space-md) 0;">
                         Modelo: {{simulacion.modeloIa}}
                     </p>
+                    {{/simulacion.respuestaIa}}
+                    {{^simulacion.respuestaIa}}
+                    <p style="color: var(--text-secondary); margin-bottom: var(--space-md);">
+                        Aún no se ha generado ningún análisis para esta simulación.
+                    </p>
+                    {{/simulacion.respuestaIa}}
+
+                    <div id="analisisIaError" class="error-message" style="display: none; background: #fee; color: #c0392b; padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);"></div>
+
+                    <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
+                        <select id="modeloIaSeleccion">
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="claude">Claude (Anthropic)</option>
+                        </select>
+                        <button type="button" id="btnAnalizarIa" onclick="analizarConIA({{simulacion.id}})" class="btn-primary">
+                            {{#simulacion.respuestaIa}}🔄 Volver a Analizar{{/simulacion.respuestaIa}}{{^simulacion.respuestaIa}}🤖 Analizar con IA{{/simulacion.respuestaIa}}
+                        </button>
+                    </div>
                 </div>
-                {{/simulacion.respuestaIa}}
                 
                 <!-- Acciones post-simulación -->
                 <div class="action-buttons">
@@ -437,6 +455,42 @@
         // Función para exportar resultados
         function exportarResultados(id) {
             window.location.href = '/ecosimulator/simulacion/exportar/' + id;
+        }
+
+        // Función para solicitar el análisis con IA
+        function analizarConIA(id) {
+            const modelo = document.getElementById('modeloIaSeleccion').value;
+            const btn = document.getElementById('btnAnalizarIa');
+            const errorBox = document.getElementById('analisisIaError');
+
+            errorBox.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = '⏳ Analizando...';
+
+            fetch('/ecosimulator/simulacion/analizar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'id=' + id + '&modelo=' + encodeURIComponent(modelo)
+            })
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    errorBox.textContent = '❌ ' + (data.error || 'Error al generar el análisis con IA');
+                    errorBox.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = '🤖 Analizar con IA';
+                }
+            })
+            .catch(error => {
+                errorBox.textContent = '❌ Error: ' + error.message;
+                errorBox.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '🤖 Analizar con IA';
+            });
         }
         
         // Actualizar progreso automáticamente si está ejecutando

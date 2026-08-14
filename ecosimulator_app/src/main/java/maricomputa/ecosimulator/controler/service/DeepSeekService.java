@@ -10,19 +10,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DeepSeekService {
+public class DeepSeekService implements AnalisisIAService {
     private static final String API_URL = "https://api.deepseek.com/v1/chat/completions";
     private final String apiKey;
     private final HttpClient client;
     private final ObjectMapper mapper;
-    
+
     public DeepSeekService(String apiKey) {
         this.apiKey = apiKey;
         this.client = HttpClient.newHttpClient();
         this.mapper = new ObjectMapper();
     }
-    
-    public String analizarSimulacion(String prompt) throws Exception {
+
+    @Override
+    public String getNombreModelo() {
+        return "DeepSeek Chat";
+    }
+
+    @Override
+    public String analizar(String prompt) throws Exception {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "deepseek-chat");
         requestBody.put("messages", List.of(
@@ -41,9 +47,13 @@ public class DeepSeekService {
             .POST(HttpRequest.BodyPublishers.ofString(json))
             .build();
         
-        HttpResponse<String> response = client.send(request, 
+        HttpResponse<String> response = client.send(request,
             HttpResponse.BodyHandlers.ofString());
-        
+
+        if (response.statusCode() != 200) {
+            throw new IllegalStateException("DeepSeek respondió con error " + response.statusCode() + ": " + response.body());
+        }
+
         Map<String, Object> result = mapper.readValue(response.body(), Map.class);
         Map<String, Object> choice = ((List<Map<String, Object>>) result.get("choices")).get(0);
         Map<String, Object> message = (Map<String, Object>) choice.get("message");
