@@ -530,6 +530,8 @@ public class AdminServlet extends HttpServlet {
         especie.setTamanoPromedio(parseBigDecimalOrNull(request.getParameter("tamanoPromedio")));
         especie.setImpactoEcologico(parseBigDecimalOrNull(request.getParameter("impactoEcologico")));
         especie.setTasaReproduccion(parseBigDecimalOrNull(request.getParameter("tasaReproduccion")));
+        especie.setTemperaturaOptima(parseBigDecimalOrNull(request.getParameter("temperaturaOptima")));
+        especie.setHumedadOptima(parseBigDecimalOrNull(request.getParameter("humedadOptima")));
         especie.setEsEndemica("on".equals(request.getParameter("esEndemica")));
         especie.setEsInvasora("on".equals(request.getParameter("esInvasora")));
         especie.setEsProtegida("on".equals(request.getParameter("esProtegida")));

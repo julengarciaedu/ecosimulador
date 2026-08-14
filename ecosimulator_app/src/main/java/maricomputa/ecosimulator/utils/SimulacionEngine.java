@@ -71,7 +71,9 @@ public class SimulacionEngine {
                     (1 - poblacionActual / capacidadCarga);
                 
                 // Factor de mortalidad por condiciones climáticas
-                double mortalidadClima = Math.abs(temp - especie.getTemperaturaOptima().doubleValue()) / 20.0;
+                double temperaturaOptima = especie.getTemperaturaOptima() != null ?
+                    especie.getTemperaturaOptima().doubleValue() : temperaturaInicial;
+                double mortalidadClima = Math.abs(temp - temperaturaOptima) / 20.0;
                 mortalidadClima = Math.min(mortalidadClima, 0.5);
                 
                 // Factor de humedad
@@ -125,10 +127,12 @@ public class SimulacionEngine {
         if ("carnivoro".equals(especie.getDieta())) {
             // Buscar presas (herbívoros)
             for (Especie otra : todas) {
-                if (otra.getId() != especie.getId() && 
+                if (otra.getId() != especie.getId() &&
                     "herbivoro".equals(otra.getDieta())) {
                     double presas = poblaciones.getOrDefault(otra.getId(), 0.0);
-                    interaccion += presas * 0.001 * especie.getImpactoEcologico().doubleValue();
+                    double impacto = especie.getImpactoEcologico() != null ?
+                        especie.getImpactoEcologico().doubleValue() : 0.5;
+                    interaccion += presas * 0.001 * impacto;
                 }
             }
         }

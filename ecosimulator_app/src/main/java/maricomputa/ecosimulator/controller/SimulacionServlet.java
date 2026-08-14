@@ -8,6 +8,7 @@ import maricomputa.ecosimulator.modelo.entidad.Habitat;
 import maricomputa.ecosimulator.modelo.entidad.Simulacion;
 import maricomputa.ecosimulator.modelo.entidad.Especie;
 import maricomputa.ecosimulator.mustache.RenderVista;
+import maricomputa.ecosimulator.utils.SimulacionEngine;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,7 @@ import java.util.UUID;
 
 @WebServlet("/simulacion/*")
 public class SimulacionServlet extends HttpServlet {
-    
+
     private SimulacionDao simulacionDAO;
     private HabitatDao habitatDAO;
     private EspecieDao especieDAO;
@@ -341,49 +343,62 @@ public class SimulacionServlet extends HttpServlet {
     }
     
     /**
-     * Ejecuta una simulación (en hilo separado)
+     * Ejecuta una simulación (en hilo separado), usando el motor real
+     * de simulación (SimulacionEngine) sobre el hábitat y las especies
+     * elegidas al crearla.
      */
-    private void ejecutarSimulacion(HttpServletRequest request, HttpServletResponse response) 
+    private void ejecutarSimulacion(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        
+
         int id = Integer.parseInt(request.getParameter("id"));
-        
+
         System.out.println("🚀 Ejecutando simulación ID: " + id);
-        
+
         // Actualizar estado a "ejecutando"
         simulacionDAO.updateEstado(id, "ejecutando");
         simulacionDAO.updateProgreso(id, 10);
-        
+
         // Ejecutar en hilo separado (simulación)
         new Thread(() -> {
             try {
-                // Simular progreso
-                for (int i = 20; i <= 90; i += 10) {
-                    Thread.sleep(500);
-                    simulacionDAO.updateProgreso(id, i);
+                Simulacion simulacion = simulacionDAO.findById(id);
+                if (simulacion == null) {
+                    throw new IllegalStateException("Simulación no encontrada");
                 }
-                
-                // Completar simulación
-                Map<String, Object> resultados = new HashMap<>();
-                resultados.put("aniosSimulados", 50);
-                resultados.put("especiesTotales", 5);
-                resultados.put("mensaje", "Simulación completada exitosamente");
-                
-                int sostenibilidad = 75;
-                int biodiversidad = 80;
-                String riesgo = "bajo";
+
+                Thread.sleep(300);
+                simulacionDAO.updateProgreso(id, 30);
+
+                Habitat habitat = simulacion.getHabitatId() != null
+                        ? habitatDAO.findById(simulacion.getHabitatId()) : null;
+
+                Map<String, Object> parametros = objectMapper.readValue(
+                        simulacion.getParametrosConfiguracion(), Map.class);
+                List<Especie> especies = obtenerEspeciesParaSimulacion(parametros);
+
+                Thread.sleep(300);
+                simulacionDAO.updateProgreso(id, 60);
+
+                SimulacionEngine engine = new SimulacionEngine();
+                Map<String, Object> resultados = engine.ejecutar(especies, habitat, parametros);
+                Map<String, Object> metricas = engine.calcularMetricas(resultados);
+                int sostenibilidad = engine.calcularSostenibilidad(resultados);
+                int biodiversidad = engine.calcularBiodiversidad(resultados);
+                String riesgo = engine.estimarRiesgo(resultados);
+
+                simulacionDAO.updateProgreso(id, 90);
 
                 simulacionDAO.completarSimulacion(
                     id,
                     objectMapper.writeValueAsString(resultados),
-                    "{}",
+                    objectMapper.writeValueAsString(metricas),
                     sostenibilidad,
                     biodiversidad,
                     riesgo
                 );
-                
+
                 System.out.println("✅ Simulación ID " + id + " completada");
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
                 try {
@@ -393,9 +408,31 @@ public class SimulacionServlet extends HttpServlet {
                 }
             }
         }).start();
-        
+
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("Simulación iniciada");
+    }
+
+    /**
+     * Resuelve las especies sobre las que correr el motor: las elegidas al
+     * crear la simulación (parámetro "especiesIds") si las hay, o todas
+     * las especies disponibles en caso contrario.
+     */
+    private List<Especie> obtenerEspeciesParaSimulacion(Map<String, Object> parametros) throws Exception {
+        Object especiesIds = parametros.get("especiesIds");
+        if (especiesIds instanceof List) {
+            List<Especie> seleccionadas = new ArrayList<>();
+            for (Object idObj : (List<?>) especiesIds) {
+                Especie especie = especieDAO.findById(Integer.parseInt(String.valueOf(idObj)));
+                if (especie != null) {
+                    seleccionadas.add(especie);
+                }
+            }
+            if (!seleccionadas.isEmpty()) {
+                return seleccionadas;
+            }
+        }
+        return especieDAO.findAll();
     }
     
     /**
