@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - Panel de Administración</title>
     <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .admin-dashboard {
             max-width: 1200px;
@@ -413,9 +414,12 @@
         document.querySelectorAll('.card-actions a').forEach(link => {
             if (link.textContent.includes('Eliminar') || link.textContent.includes('Borrar')) {
                 link.addEventListener('click', function(e) {
-                    if (!confirm('⚠️ ¿Estás seguro de que quieres realizar esta acción?')) {
-                        e.preventDefault();
-                    }
+                    e.preventDefault();
+                    confirmarAccion('¿Estás seguro de que quieres realizar esta acción?').then(confirmado => {
+                        if (confirmado) {
+                            window.location.href = link.href;
+                        }
+                    });
                 });
             }
         });

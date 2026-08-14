@@ -8,6 +8,10 @@ import maricomputa.ecosimulator.modelo.entidad.Habitat;
 import maricomputa.ecosimulator.modelo.entidad.Simulacion;
 import maricomputa.ecosimulator.modelo.entidad.Especie;
 import maricomputa.ecosimulator.mustache.RenderVista;
+import maricomputa.ecosimulator.utils.SimulacionEngine;
+import maricomputa.ecosimulator.controler.service.AnalisisIAFactory;
+import maricomputa.ecosimulator.controler.service.AnalisisIAService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,18 +20,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @WebServlet("/simulacion/*")
 public class SimulacionServlet extends HttpServlet {
-    
+
     private SimulacionDao simulacionDAO;
     private HabitatDao habitatDAO;
     private EspecieDao especieDAO;
-    
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void init() throws ServletException {
         simulacionDAO = new SimulacionDao();
@@ -71,6 +78,11 @@ public class SimulacionServlet extends HttpServlet {
                 // Listar simulaciones públicas
                 listarPublicas(request, response);
                 return;
+
+            } else if (path.startsWith("/exportar/")) {
+                // Descargar los resultados de una simulación en JSON
+                exportarSimulacion(request, response);
+                return;
             }
             
             // Si no coincide con ninguna ruta, error 404
@@ -106,6 +118,8 @@ public class SimulacionServlet extends HttpServlet {
                 eliminarSimulacion(request, response);
             } else if (path.equals("/compartir")) {
                 compartirSimulacion(request, response);
+            } else if (path.equals("/analizar")) {
+                analizarConIA(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -208,8 +222,9 @@ public class SimulacionServlet extends HttpServlet {
             parametros.put("especiesIds", especiesSeleccionadas);
         }
         
-        // Convertir parámetros a JSON (simplificado)
-        simulacion.setParametrosConfiguracion(parametros.toString());
+        // Convertir parámetros a JSON real (la columna es de tipo JSON en MySQL,
+        // Map.toString() no es JSON válido y la inserción fallaba)
+        simulacion.setParametrosConfiguracion(objectMapper.writeValueAsString(parametros));
         
         // Guardar en base de datos
         simulacionDAO.insert(simulacion);
@@ -331,56 +346,131 @@ public class SimulacionServlet extends HttpServlet {
                 
         } catch (Exception e) {
             e.printStackTrace();
-            RenderVista.renderizarVista(response, 
-                getServletContext().getRealPath("templates/error.html"), 
+            RenderVista.renderizarVista(response,
+                getServletContext().getRealPath("templates/error.html"),
                 Map.of("error", "Error al cargar simulaciones públicas: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Descarga los resultados de una simulación como fichero JSON
+     */
+    private void exportarSimulacion(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String[] parts = request.getPathInfo().split("/");
+        int id = Integer.parseInt(parts[parts.length - 1]);
+
+        try {
+            Simulacion simulacion = simulacionDAO.findById(id);
+            if (simulacion == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            Integer usuarioId = (Integer) request.getSession().getAttribute("usuarioId");
+            String rol = (String) request.getSession().getAttribute("rol");
+
+            if (!simulacion.isEsPublica() && simulacion.getUsuarioId() != usuarioId && !"admin".equals(rol)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            Map<String, Object> exportacion = new LinkedHashMap<>();
+            exportacion.put("id", simulacion.getId());
+            exportacion.put("nombre", simulacion.getNombre());
+            exportacion.put("descripcion", simulacion.getDescripcion());
+            exportacion.put("estado", simulacion.getEstado());
+            exportacion.put("duracionSimuladaAnios", simulacion.getDuracionSimulada());
+            exportacion.put("puntuacionSostenibilidad", simulacion.getPuntuacionSostenibilidad());
+            exportacion.put("puntuacionBiodiversidad", simulacion.getPuntuacionBiodiversidad());
+            exportacion.put("riesgoEstimado", simulacion.getRiesgoEstimado());
+            exportacion.put("fechaInicio", simulacion.getFechaInicio());
+            exportacion.put("fechaFin", simulacion.getFechaFin());
+            exportacion.put("modeloIa", simulacion.getModeloIa());
+            exportacion.put("respuestaIa", simulacion.getRespuestaIa());
+
+            if (simulacion.getResultadosGenerales() != null) {
+                exportacion.put("resultados", objectMapper.readValue(simulacion.getResultadosGenerales(), Map.class));
+            }
+            if (simulacion.getMetricasCalculadas() != null) {
+                exportacion.put("metricas", objectMapper.readValue(simulacion.getMetricasCalculadas(), Map.class));
+            }
+
+            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportacion);
+            byte[] contenido = json.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+            response.setContentType("application/json;charset=UTF-8");
+            response.setHeader("Content-Disposition",
+                "attachment; filename=\"simulacion-" + simulacion.getId() + ".json\"");
+            response.setContentLength(contenido.length);
+            response.getOutputStream().write(contenido);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            RenderVista.renderizarVista(response,
+                getServletContext().getRealPath("templates/error.html"),
+                Map.of("error", "Error al exportar la simulación: " + e.getMessage()));
         }
     }
     
     /**
-     * Ejecuta una simulación (en hilo separado)
+     * Ejecuta una simulación (en hilo separado), usando el motor real
+     * de simulación (SimulacionEngine) sobre el hábitat y las especies
+     * elegidas al crearla.
      */
-    private void ejecutarSimulacion(HttpServletRequest request, HttpServletResponse response) 
+    private void ejecutarSimulacion(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        
+
         int id = Integer.parseInt(request.getParameter("id"));
-        
+
         System.out.println("🚀 Ejecutando simulación ID: " + id);
-        
+
         // Actualizar estado a "ejecutando"
         simulacionDAO.updateEstado(id, "ejecutando");
         simulacionDAO.updateProgreso(id, 10);
-        
+
         // Ejecutar en hilo separado (simulación)
         new Thread(() -> {
             try {
-                // Simular progreso
-                for (int i = 20; i <= 90; i += 10) {
-                    Thread.sleep(500);
-                    simulacionDAO.updateProgreso(id, i);
+                Simulacion simulacion = simulacionDAO.findById(id);
+                if (simulacion == null) {
+                    throw new IllegalStateException("Simulación no encontrada");
                 }
-                
-                // Completar simulación
-                Map<String, Object> resultados = new HashMap<>();
-                resultados.put("aniosSimulados", 50);
-                resultados.put("especiesTotales", 5);
-                resultados.put("mensaje", "Simulación completada exitosamente");
-                
-                int sostenibilidad = 75;
-                int biodiversidad = 80;
-                String riesgo = "bajo";
-                
+
+                Thread.sleep(300);
+                simulacionDAO.updateProgreso(id, 30);
+
+                Habitat habitat = simulacion.getHabitatId() != null
+                        ? habitatDAO.findById(simulacion.getHabitatId()) : null;
+
+                Map<String, Object> parametros = objectMapper.readValue(
+                        simulacion.getParametrosConfiguracion(), Map.class);
+                List<Especie> especies = obtenerEspeciesParaSimulacion(parametros);
+
+                Thread.sleep(300);
+                simulacionDAO.updateProgreso(id, 60);
+
+                SimulacionEngine engine = new SimulacionEngine();
+                Map<String, Object> resultados = engine.ejecutar(especies, habitat, parametros);
+                Map<String, Object> metricas = engine.calcularMetricas(resultados);
+                int sostenibilidad = engine.calcularSostenibilidad(resultados);
+                int biodiversidad = engine.calcularBiodiversidad(resultados);
+                String riesgo = engine.estimarRiesgo(resultados);
+
+                simulacionDAO.updateProgreso(id, 90);
+
                 simulacionDAO.completarSimulacion(
                     id,
-                    resultados.toString(),
-                    "{}",
+                    objectMapper.writeValueAsString(resultados),
+                    objectMapper.writeValueAsString(metricas),
                     sostenibilidad,
                     biodiversidad,
                     riesgo
                 );
-                
+
                 System.out.println("✅ Simulación ID " + id + " completada");
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
                 try {
@@ -390,9 +480,31 @@ public class SimulacionServlet extends HttpServlet {
                 }
             }
         }).start();
-        
+
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("Simulación iniciada");
+    }
+
+    /**
+     * Resuelve las especies sobre las que correr el motor: las elegidas al
+     * crear la simulación (parámetro "especiesIds") si las hay, o todas
+     * las especies disponibles en caso contrario.
+     */
+    private List<Especie> obtenerEspeciesParaSimulacion(Map<String, Object> parametros) throws Exception {
+        Object especiesIds = parametros.get("especiesIds");
+        if (especiesIds instanceof List) {
+            List<Especie> seleccionadas = new ArrayList<>();
+            for (Object idObj : (List<?>) especiesIds) {
+                Especie especie = especieDAO.findById(Integer.parseInt(String.valueOf(idObj)));
+                if (especie != null) {
+                    seleccionadas.add(especie);
+                }
+            }
+            if (!seleccionadas.isEmpty()) {
+                return seleccionadas;
+            }
+        }
+        return especieDAO.findAll();
     }
     
     /**
@@ -439,11 +551,78 @@ public class SimulacionServlet extends HttpServlet {
         
         simulacion.setEsPublica(esPublica);
         simulacionDAO.update(simulacion);
-        
+
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("Estado de compartir actualizado");
     }
-    
+
+    /**
+     * Genera (o regenera) el análisis de IA de una simulación completada,
+     * con el proveedor elegido por el usuario (DeepSeek o Claude).
+     */
+    private void analizarConIA(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+
+        int id = Integer.parseInt(request.getParameter("id"));
+        String modelo = request.getParameter("modelo");
+
+        Simulacion simulacion = simulacionDAO.findById(id);
+        if (simulacion == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        if (!simulacion.isCompletada()) {
+            responderJson(response, HttpServletResponse.SC_BAD_REQUEST,
+                Map.of("error", "Solo se pueden analizar simulaciones completadas"));
+            return;
+        }
+
+        try {
+            AnalisisIAService servicio = AnalisisIAFactory.obtener(modelo);
+            String prompt = construirPromptAnalisis(simulacion);
+            String respuesta = servicio.analizar(prompt);
+
+            simulacion.setPromptIa(prompt);
+            simulacion.setRespuestaIa(respuesta);
+            simulacion.setModeloIa(servicio.getNombreModelo());
+            simulacionDAO.update(simulacion);
+
+            responderJson(response, HttpServletResponse.SC_OK,
+                Map.of("respuesta", respuesta, "modelo", servicio.getNombreModelo()));
+
+        } catch (IllegalStateException e) {
+            // Clave de API no configurada, o error devuelto por el proveedor
+            responderJson(response, HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                Map.of("error", e.getMessage()));
+        }
+    }
+
+    private String construirPromptAnalisis(Simulacion simulacion) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Analiza los siguientes resultados de una simulación de ecosistema ")
+              .append("y ofrece un análisis claro para un público no especializado, ")
+              .append("con recomendaciones concretas de conservación.\n\n");
+        prompt.append("Nombre: ").append(simulacion.getNombre()).append("\n");
+        prompt.append("Duración simulada: ").append(simulacion.getDuracionSimulada()).append(" años\n");
+        prompt.append("Puntuación de sostenibilidad: ").append(simulacion.getPuntuacionSostenibilidad()).append("/100\n");
+        prompt.append("Puntuación de biodiversidad: ").append(simulacion.getPuntuacionBiodiversidad()).append("/100\n");
+        prompt.append("Riesgo estimado: ").append(simulacion.getRiesgoIcono()).append("\n");
+        if (simulacion.getMetricasCalculadas() != null) {
+            prompt.append("Métricas calculadas: ").append(simulacion.getMetricasCalculadas()).append("\n");
+        }
+        prompt.append("\nEstructura la respuesta en: 1) resumen del estado del ecosistema, ")
+              .append("2) riesgos identificados, 3) recomendaciones prácticas.");
+        return prompt.toString();
+    }
+
+    private void responderJson(HttpServletResponse response, int status, Map<String, Object> cuerpo)
+            throws Exception {
+        response.setStatus(status);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(cuerpo));
+    }
+
     /**
      * Prepara el contexto para Mustache
      */

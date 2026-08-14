@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - Gestión de Especies</title>
-    <link rel="stylesheet" href="../css/ecostyles.css">
+    <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .species-grid {
             display: grid;
@@ -242,8 +243,9 @@
             });
         }
         
-        function eliminarEspecie(id) {
-            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar esta especie?')) {
+        async function eliminarEspecie(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar esta especie?');
+            if (confirmado) {
                 fetch('/ecosimulator/admin/especie/eliminar', {
                     method: 'POST',
                     headers: {

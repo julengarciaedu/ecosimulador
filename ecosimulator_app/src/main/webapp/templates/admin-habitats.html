@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - Gestión de Hábitats</title>
-    <link rel="stylesheet" href="../css/ecostyles.css">
+    <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .habitat-grid {
             display: grid;
@@ -163,16 +164,7 @@
                      data-bioma="{{tipoBioma}}"
                      data-proteccion="{{estatusProteccion}}">
                     <div class="biome-icon">
-                        {{#tipoBioma}}
-                            {{#equals tipoBioma 'bosque_tropical'}}🌴{{/equals}}
-                            {{#equals tipoBioma 'bosque_templado'}}🌳{{/equals}}
-                            {{#equals tipoBioma 'humedal'}}🌊{{/equals}}
-                            {{#equals tipoBioma 'desierto_calido'}}🏜️{{/equals}}
-                            {{#equals tipoBioma 'tundra_artica'}}❄️{{/equals}}
-                            {{#equals tipoBioma 'sabana'}}🦒{{/equals}}
-                            {{#equals tipoBioma 'manglar'}}🌿{{/equals}}
-                            {{^}}🏞️{{/}}
-                        {{/tipoBioma}}
+                        {{biomaIcono}}
                     </div>
                     
                     <h4>{{nombre}}</h4>
@@ -284,8 +276,9 @@
             });
         }
         
-        function eliminarHabitat(id) {
-            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar este hábitat? Se eliminarán todas las simulaciones asociadas.')) {
+        async function eliminarHabitat(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar este hábitat? Se eliminarán todas las simulaciones asociadas.');
+            if (confirmado) {
                 fetch('/ecosimulator/admin/habitat/eliminar', {
                     method: 'POST',
                     headers: {

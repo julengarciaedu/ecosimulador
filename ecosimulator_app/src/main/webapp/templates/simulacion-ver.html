@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 EcoSimulator - {{simulacion.nombre}}</title>
     <link rel="stylesheet" href="/ecosimulator/css/ecostyles.css">
+    <script src="/ecosimulator/js/confirm-dialog.js" defer></script>
     <style>
         .simulation-detail {
             max-width: 1000px;
@@ -202,14 +203,7 @@
             <div class="status-header">
                 <div>
                     <span class="status-badge-large {{simulacion.estado}}">
-                        {{#simulacion.estado}}
-                            {{#equals simulacion.estado 'pendiente'}}⏳ Pendiente{{/equals}}
-                            {{#equals simulacion.estado 'configurando'}}⚙️ Configurando{{/equals}}
-                            {{#equals simulacion.estado 'ejecutando'}}🔄 Ejecutando{{/equals}}
-                            {{#equals simulacion.estado 'completada'}}✅ Completada{{/equals}}
-                            {{#equals simulacion.estado 'fallida'}}❌ Fallida{{/equals}}
-                            {{#equals simulacion.estado 'cancelada'}}⏹️ Cancelada{{/equals}}
-                        {{/simulacion.estado}}
+                        {{simulacion.estadoIcono}}
                     </span>
                 </div>
                 <div>
@@ -244,20 +238,14 @@
                 </div>
                 <div class="info-item">
                     <div class="value" style="text-transform: uppercase; font-size: 1.4rem;">
-                        {{#simulacion.riesgoEstimado}}
-                            {{#equals simulacion.riesgoEstimado 'bajo'}}🟢 Bajo{{/equals}}
-                            {{#equals simulacion.riesgoEstimado 'medio'}}🟡 Medio{{/equals}}
-                            {{#equals simulacion.riesgoEstimado 'alto'}}🟠 Alto{{/equals}}
-                            {{#equals simulacion.riesgoEstimado 'critico'}}🔴 Crítico{{/equals}}
-                        {{/simulacion.riesgoEstimado}}
-                        {{^simulacion.riesgoEstimado}}--{{/simulacion.riesgoEstimado}}
+                        {{simulacion.riesgoIcono}}
                     </div>
                     <div class="label">⚠️ Riesgo Estimado</div>
                 </div>
             </div>
             
             <!-- Resultados (si está completada) -->
-            {{#equals simulacion.estado 'completada'}}
+            {{#simulacion.completada}}
             <div class="result-section">
                 <h2>📊 Resultados de la Simulación</h2>
                 
@@ -265,13 +253,13 @@
                     <h3>📈 Métricas Principales</h3>
                     <div class="metric-grid">
                         <div class="metric-item">
-                            <div class="number {{#simulacion.puntuacionSostenibilidad}}{{#gt . 70}}healthy{{/gt}}{{#lte . 70}}{{#gt . 50}}warning{{/gt}}{{/lte}}{{#lte . 50}}{{#gt . 30}}danger{{/gt}}{{/lte}}{{#lte . 30}}critical{{/lte}}{{/simulacion.puntuacionSostenibilidad}}">
+                            <div class="number {{simulacion.sostenibilidadClase}}">
                                 {{simulacion.puntuacionSostenibilidad}}%
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">Sostenibilidad</div>
                         </div>
                         <div class="metric-item">
-                            <div class="number {{#simulacion.puntuacionBiodiversidad}}{{#gt . 70}}healthy{{/gt}}{{#lte . 70}}{{#gt . 50}}warning{{/gt}}{{/lte}}{{#lte . 50}}{{#gt . 30}}danger{{/gt}}{{/lte}}{{#lte . 30}}critical{{/lte}}{{/simulacion.puntuacionBiodiversidad}}">
+                            <div class="number {{simulacion.biodiversidadClase}}">
                                 {{simulacion.puntuacionBiodiversidad}}%
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">Biodiversidad</div>
@@ -288,17 +276,35 @@
                 </div>
                 
                 <!-- Análisis IA -->
-                {{#simulacion.respuestaIa}}
                 <div class="result-card" style="border-left: 4px solid var(--color-secondary);">
                     <h3>🤖 Análisis con IA</h3>
+
+                    {{#simulacion.respuestaIa}}
                     <div style="white-space: pre-wrap; font-family: var(--font-primary); line-height: 1.8; color: var(--text-primary);">
                         {{simulacion.respuestaIa}}
                     </div>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: var(--space-md);">
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: var(--space-sm) 0 var(--space-md) 0;">
                         Modelo: {{simulacion.modeloIa}}
                     </p>
+                    {{/simulacion.respuestaIa}}
+                    {{^simulacion.respuestaIa}}
+                    <p style="color: var(--text-secondary); margin-bottom: var(--space-md);">
+                        Aún no se ha generado ningún análisis para esta simulación.
+                    </p>
+                    {{/simulacion.respuestaIa}}
+
+                    <div id="analisisIaError" class="error-message" style="display: none; background: #fee; color: #c0392b; padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);"></div>
+
+                    <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
+                        <select id="modeloIaSeleccion">
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="claude">Claude (Anthropic)</option>
+                        </select>
+                        <button type="button" id="btnAnalizarIa" onclick="analizarConIA({{simulacion.id}})" class="btn-primary">
+                            {{#simulacion.respuestaIa}}🔄 Volver a Analizar{{/simulacion.respuestaIa}}{{^simulacion.respuestaIa}}🤖 Analizar con IA{{/simulacion.respuestaIa}}
+                        </button>
+                    </div>
                 </div>
-                {{/simulacion.respuestaIa}}
                 
                 <!-- Acciones post-simulación -->
                 <div class="action-buttons">
@@ -313,41 +319,41 @@
                     </button>
                 </div>
             </div>
-            {{/equals}}
-            
+            {{/simulacion.completada}}
+
             <!-- Acciones (si no está completada) -->
-            {{^equals simulacion.estado 'completada'}}
+            {{^simulacion.completada}}
             <div class="action-buttons">
-                {{#equals simulacion.estado 'pendiente'}}
-                <button onclick="ejecutarSimulacion({{simulacion.id}})" class="btn-success">
+                {{#simulacion.pendiente}}
+                <button onclick="ejecutarSimulacion({{simulacion.id}}, this)" class="btn-success">
                     🚀 Ejecutar Simulación
                 </button>
-                {{/equals}}
-                
-                {{#equals simulacion.estado 'ejecutando'}}
+                {{/simulacion.pendiente}}
+
+                {{#simulacion.ejecutando}}
                 <button onclick="cancelarSimulacion({{simulacion.id}})" class="btn-danger">
                     ⏹️ Cancelar Simulación
                 </button>
-                {{/equals}}
-                
+                {{/simulacion.ejecutando}}
+
                 <button onclick="eliminarSimulacion({{simulacion.id}})" class="btn-danger">
                     🗑️ Eliminar Simulación
                 </button>
-                
+
                 <a href="/ecosimulator/dashboard" class="btn-secondary" style="text-align: center; text-decoration: none; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-lg);">
                     ↩️ Volver al Dashboard
                 </a>
             </div>
-            {{/equals}}
-            
+            {{/simulacion.completada}}
+
             <!-- Botón volver siempre visible -->
-            {{#equals simulacion.estado 'completada'}}
+            {{#simulacion.completada}}
             <div style="margin-top: var(--space-md);">
                 <a href="/ecosimulator/dashboard" class="btn-secondary" style="text-align: center; text-decoration: none; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-lg); display: inline-block;">
                     ↩️ Volver al Dashboard
                 </a>
             </div>
-            {{/equals}}
+            {{/simulacion.completada}}
         </div>
     </main>
     
@@ -357,12 +363,12 @@
     
     <script>
         // Función para ejecutar simulación
-        function ejecutarSimulacion(id) {
-            if (confirm('¿Estás seguro de que quieres ejecutar esta simulación?')) {
-                const btn = event.target;
+        async function ejecutarSimulacion(id, btn) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres ejecutar esta simulación?', { tipo: 'info', textoAceptar: '🚀 Ejecutar' });
+            if (confirmado) {
                 btn.textContent = '⏳ Ejecutando...';
                 btn.disabled = true;
-                
+
                 fetch('/ecosimulator/simulacion/ejecutar', {
                     method: 'POST',
                     headers: {
@@ -389,16 +395,18 @@
         }
         
         // Función para cancelar simulación
-        function cancelarSimulacion(id) {
-            if (confirm('¿Estás seguro de que quieres cancelar esta simulación?')) {
+        async function cancelarSimulacion(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres cancelar esta simulación?', { tipo: 'info', textoAceptar: '⏹️ Sí, cancelar' });
+            if (confirmado) {
                 // Implementar cancelación
                 alert('Función en desarrollo');
             }
         }
-        
+
         // Función para eliminar simulación
-        function eliminarSimulacion(id) {
-            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar esta simulación? Esta acción no se puede deshacer.')) {
+        async function eliminarSimulacion(id) {
+            const confirmado = await confirmarAccion('¿Estás seguro de que quieres eliminar esta simulación? Esta acción no se puede deshacer.');
+            if (confirmado) {
                 fetch('/ecosimulator/simulacion/eliminar', {
                     method: 'POST',
                     headers: {
@@ -420,8 +428,8 @@
         }
         
         // Función para compartir simulación
-        function compartirSimulacion(id) {
-            const publicar = confirm('¿Quieres hacer pública esta simulación?');
+        async function compartirSimulacion(id) {
+            const publicar = await confirmarAccion('¿Quieres hacer pública esta simulación?', { tipo: 'info', textoAceptar: '🔗 Compartir' });
             if (publicar) {
                 fetch('/ecosimulator/simulacion/compartir', {
                     method: 'POST',
@@ -448,9 +456,45 @@
         function exportarResultados(id) {
             window.location.href = '/ecosimulator/simulacion/exportar/' + id;
         }
+
+        // Función para solicitar el análisis con IA
+        function analizarConIA(id) {
+            const modelo = document.getElementById('modeloIaSeleccion').value;
+            const btn = document.getElementById('btnAnalizarIa');
+            const errorBox = document.getElementById('analisisIaError');
+
+            errorBox.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = '⏳ Analizando...';
+
+            fetch('/ecosimulator/simulacion/analizar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'id=' + id + '&modelo=' + encodeURIComponent(modelo)
+            })
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    errorBox.textContent = '❌ ' + (data.error || 'Error al generar el análisis con IA');
+                    errorBox.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = '🤖 Analizar con IA';
+                }
+            })
+            .catch(error => {
+                errorBox.textContent = '❌ Error: ' + error.message;
+                errorBox.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '🤖 Analizar con IA';
+            });
+        }
         
         // Actualizar progreso automáticamente si está ejecutando
-        {{#equals simulacion.estado 'ejecutando'}}
+        {{#simulacion.ejecutando}}
         setInterval(function() {
             fetch('/ecosimulator/simulacion/progreso/{{simulacion.id}}')
             .then(response => response.json())
@@ -465,7 +509,7 @@
             })
             .catch(error => console.error('Error actualizando progreso:', error));
         }, 3000);
-        {{/equals}}
+        {{/simulacion.ejecutando}}
     </script>
 </body>
 </html>
