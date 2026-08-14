@@ -372,10 +372,10 @@ public class SimulacionServlet extends HttpServlet {
                 int sostenibilidad = 75;
                 int biodiversidad = 80;
                 String riesgo = "bajo";
-                
+
                 simulacionDAO.completarSimulacion(
                     id,
-                    resultados.toString(),
+                    objectMapper.writeValueAsString(resultados),
                     "{}",
                     sostenibilidad,
                     biodiversidad,
